@@ -55,18 +55,18 @@ export function wrap<D extends Document> (model: Model<D>): Model<D> {
 
   model.prototype[delegatedSaveFunction] = model.prototype.save;
 
-  model.prototype.save = async function (options, fn) {
+  model.prototype.save = async function (options, fn): Promise<D> {
 
     if (typeof options === 'function') {
       fn = options;
       options = undefined;
     }
 
-    let product;
+    let product: D;
     let error;
 
     try {
-      product = saveSlugWithRetries(this, options);
+      product = await saveSlugWithRetries(this, options);
     } catch (e) {
       error = e;
     }
