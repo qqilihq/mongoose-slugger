@@ -11,7 +11,7 @@ There exist several similar Mongoose plugins already, however, none of them fit 
 
 * Saving with a generated slug must work atomically. This means: First performing a query to check whether a slug is not yet taken and then saving a document is not acceptable!
 
-* We need the ability for “scoped” tags. This means: Slugs can be unique with regards to other document properties (e.g. have unique person name slugs in regards to a place, …)
+* We need the ability for “scoped” slugs. This means: Slugs can be unique with regards to other document properties (e.g. have unique person name slugs in regards to a place, …)
 
 * Must work with callbacks and promises.
 
