@@ -57,6 +57,14 @@ describe('slugger', () => {
 
   });
 
+  describe('options validation', () => {
+
+    it('throws error neither when `generateFrom` or `generate` is given', () => {
+      expect(slugger.plugin).withArgs(null, { index: 'slug' }).to.throwError(/`generateFrom` or `generator` is missing./);
+    });
+
+  });
+
   describe('default generator', () => {
 
     let doc;
