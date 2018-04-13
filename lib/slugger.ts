@@ -42,8 +42,11 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
     throw new Error('`generateFrom` or `generator` is missing.');
   }
 
-  // TODO : make sure the specified index exists
-  // const indices = schema.indexes();
+  // make sure the specified index exists
+  const indices: any[][] = schema.indexes();
+  if (!indices.find(entry => entry.length > 1 && entry[1].name === options.index)) {
+    throw new Error(`schema contains no index with name '${options.index}'.`);
+  }
 
   schema.pre('validate', function (next) {
     const attempt = (this as any as SlugDocumentAttachment).slugAttempt || 0;
