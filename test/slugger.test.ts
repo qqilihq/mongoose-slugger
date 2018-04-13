@@ -31,7 +31,7 @@ describe('slugger', () => {
     schema.index({ city: 1, country: 1, slug: 1 }, { name: 'city_country_slug', unique: true });
     schema.index({ email: 1 }, { name: 'email', unique: true });
 
-    sluggerOptions = {
+    sluggerOptions = new slugger.SluggerOptions({
 
       slugPath: 'slug',
 
@@ -51,7 +51,7 @@ describe('slugger', () => {
 
       index: 'city_country_slug'
 
-    };
+    });
 
     schema.plugin(slugger.plugin, sluggerOptions);
 
@@ -67,12 +67,12 @@ describe('slugger', () => {
     });
 
     it('throws error when neither `generateFrom` nor `generate` is given', () => {
-      expect(slugger.plugin).withArgs(null, { index: 'slug' }).to.throwError(/`generateFrom` or `generator` is missing./);
+      expect(() => new slugger.SluggerOptions({ index: 'slug' })).to.throwError(/`generateFrom` or `generator` is missing./);
     });
 
     it('throws error when specified index does not exist', () => {
       const schema = new mongoose.Schema({ name: String });
-      const sluggerOptions: slugger.SluggerOptions<any> = { generateFrom: 'name', index: 'does_not_exist' };
+      const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'does_not_exist' });
       expect(slugger.plugin).withArgs(schema, sluggerOptions).to.throwError(/schema contains no index with name 'does_not_exist'./);
     });
 

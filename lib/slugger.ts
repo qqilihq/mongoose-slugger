@@ -6,12 +6,27 @@ export interface GeneratorFunction<D extends Document> {
   (doc: D, attempt: number): string;
 }
 
-export interface SluggerOptions<D extends Document> {
-  slugPath?: string;
-  generator?: GeneratorFunction<D>;
-  generateFrom?: string | string[];
-  index: string;
+export class SluggerOptions<D extends Document> {
+  readonly slugPath: string;
+  readonly generator: GeneratorFunction<D>;
+  readonly generateFrom?: string | string[];
+  readonly index: string;
   // TODO add a `maxAttempts` option? -- when reached, stop trying and throw the error
+  constructor (init?: Partial<SluggerOptions<D>>) {
+    Object.assign(this, init);
+
+    // `slug` defaults to 'slug'
+    this.slugPath = this.slugPath || 'slug';
+
+    // build generator function from `generateFrom` property
+    if (this.generateFrom) {
+      this.generator = createDefaultGenerator(this.generateFrom);
+    }
+    // neither `generateFrom` nor `generator` -- error
+    if (!this.generator) {
+      throw new Error('`generateFrom` or `generator` is missing.');
+    }
+  }
 }
 
 interface SlugDocumentAttachment {
@@ -26,22 +41,6 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
     throw new Error('options are missing.');
   }
 
-  // `slug` defaults to 'slug'
-  const slugPath = options.slugPath || 'slug';
-
-  let generator: GeneratorFunction<Document>;
-
-  // build generator function from `generateFrom` property
-  if (options.generateFrom) {
-    generator = createDefaultGenerator(options.generateFrom);
-  // generator function was given
-  } else if (options.generator) {
-    generator = options.generator;
-  // neither `generateFrom` nor `generator` -- error
-  } else {
-    throw new Error('`generateFrom` or `generator` is missing.');
-  }
-
   // make sure the specified index exists
   const indices: any[][] = schema.indexes();
   if (!indices.find(entry => entry.length > 1 && entry[1].name === options.index)) {
@@ -50,8 +49,8 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
 
   schema.pre('validate', function (next) {
     const attempt = (this as any as SlugDocumentAttachment).slugAttempt || 0;
-    if (!this.get(slugPath) || attempt) {
-      this.set(slugPath, generator(this, attempt));
+    if (!this.get(options.slugPath) || attempt) {
+      this.set(options.slugPath, options.generator(this, attempt));
     }
     next();
   });
