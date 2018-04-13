@@ -27,7 +27,7 @@ describe('slugger', () => {
       email: String
     });
 
-    schema.index({ city: 1, country: 1, slug: 1 }, { name: 'city_county_slug', unique: true });
+    schema.index({ city: 1, country: 1, slug: 1 }, { name: 'city_country_slug', unique: true });
     schema.index({ email: 1 }, { name: 'email', unique: true });
 
     schema.plugin(slugger.plugin, {
@@ -123,14 +123,14 @@ describe('slugger', () => {
 
       it('generates another slug in case of a conflict', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' });
-        const doc2 = await slugger.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john2@example.com' }));
+        const doc2 = await slugger.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john2@example.com' }), 'city_country_slug');
         expect(doc2.slug).to.eql('john-doe-2');
       });
 
       it('generates slug sequence', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' }); // slug = john-doe
         for (let n = 2; n <= 10; n++) {
-          const doc = await slugger.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: `john${n}@example.com` }));
+          const doc = await slugger.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: `john${n}@example.com` }), 'city_country_slug');
           expect(doc.slug).to.eql(`john-doe-${n}`);
         }
       });

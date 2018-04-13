@@ -1,4 +1,6 @@
 import { Document, Schema, Model, SaveOptions } from 'mongoose';
+// tslint:disable-next-line:no-duplicate-imports
+import * as mongoose from 'mongoose';
 import { MongoError } from 'mongodb';
 import * as limax from 'limax';
 
@@ -53,6 +55,8 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
 
 export function wrap<D extends Document> (model: Model<D>): Model<D> {
 
+  const index: string = model.prototype.schema.plugins[0].opts.index;
+
   model.prototype[delegatedSaveFunction] = model.prototype.save;
 
   model.prototype.save = async function (options, fn) {
@@ -66,7 +70,7 @@ export function wrap<D extends Document> (model: Model<D>): Model<D> {
     let error;
 
     try {
-      product = saveSlugWithRetries(this, options);
+      product = saveSlugWithRetries(this, index, options);
     } catch (e) {
       error = e;
     }
@@ -84,7 +88,7 @@ export function wrap<D extends Document> (model: Model<D>): Model<D> {
 
 }
 
-export async function saveSlugWithRetries<D extends Document> (document: D, options?: SaveOptions): Promise<D> {
+export async function saveSlugWithRetries<D extends Document> (document: D, index: string, options?: SaveOptions): Promise<D> {
 
   for (;;) {
 
@@ -96,8 +100,8 @@ export async function saveSlugWithRetries<D extends Document> (document: D, opti
     } catch (e) {
 
       if (e instanceof MongoError) {
-        // TODO check which index is affected
-        if (e.code === 11000) {
+
+        if (e.code === 11000 && e.message.includes(index)) {
           const slugDocument: SlugDocumentAttachment = document as any;
           slugDocument.slugAttempt = (slugDocument.slugAttempt || 0) + 1;
           continue;
