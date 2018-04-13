@@ -5,6 +5,14 @@ Automatically generates so called “slugs” for [Mongoose](http://mongoosejs.c
 
 In case a slug is already taken by an existing document, the plugin automatically creates a new one (typically using a sequence number) and keeps trying until the document can be saved successfully.
 
+When correctly configured, the plugin will do the following:
+
+```
+Model.create({ firstname: 'john', lastname: 'doe' }); // slug = 'john-doe'
+Model.create({ firstname: 'jane', lastname: 'roe' }); // slug = 'jane-roe'
+Model.create({ firstname: 'john', lastname: 'doe' }); // slug = 'john-doe-2'
+```
+
 There exist several similar Mongoose plugins already, however, none of them fit our requirements. These are:
 
 * We do not want to maintain a separate collection for storing any state.
