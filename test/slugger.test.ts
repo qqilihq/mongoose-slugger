@@ -15,6 +15,7 @@ interface IMyDocument extends mongoose.Document {
 describe('slugger', () => {
 
   let Model: mongoose.Model<IMyDocument>;
+  let sluggerOptions: slugger.SluggerOptions<IMyDocument>;
 
   before(() => {
 
@@ -30,7 +31,7 @@ describe('slugger', () => {
     schema.index({ city: 1, country: 1, slug: 1 }, { name: 'city_country_slug', unique: true });
     schema.index({ email: 1 }, { name: 'email', unique: true });
 
-    schema.plugin(slugger.plugin, {
+    sluggerOptions = {
 
       slugPath: 'slug',
 
@@ -50,10 +51,12 @@ describe('slugger', () => {
 
       index: 'city_country_slug'
 
-    } as slugger.SluggerOptions<IMyDocument>);
+    };
+
+    schema.plugin(slugger.plugin, sluggerOptions);
 
     Model = mongoose.model<IMyDocument>('SlugModel', schema);
-    Model = slugger.wrap(Model);
+    Model = slugger.wrap(Model, sluggerOptions);
 
   });
 
@@ -133,14 +136,14 @@ describe('slugger', () => {
 
       it('generates another slug in case of a conflict', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' });
-        const doc2 = await slugger.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john2@example.com' }));
+        const doc2 = await slugger.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john2@example.com' }), sluggerOptions);
         expect(doc2.slug).to.eql('john-doe-2');
       });
 
       it('generates slug sequence', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' }); // slug = john-doe
         for (let n = 2; n <= 10; n++) {
-          const doc = await slugger.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: `john${n}@example.com` }));
+          const doc = await slugger.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: `john${n}@example.com` }), sluggerOptions);
           expect(doc.slug).to.eql(`john-doe-${n}`);
         }
       });
@@ -191,6 +194,16 @@ describe('slugger', () => {
         });
       });
 
+    });
+
+    describe('utilities', () => {
+      it('extracts index name from error message', () => {
+        const message = 'E11000 duplicate key error collection: slugger-test.slugmodels index: city_country_slug dup key: { : "memphis", : "usa", : "john-doe" }';
+        expect(slugger.extractIndexNameFromError(message)).to.eql('city_country_slug');
+      });
+      it('returns `undefined` in case of no match', () => {
+        expect(slugger.extractIndexNameFromError('foo')).to.be(undefined);
+      });
     });
 
   });

@@ -58,22 +58,22 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
 
 }
 
-export function wrap<D extends Document> (model: Model<D>): Model<D> {
+export function wrap<D extends Document> (model: Model<D>, sluggerOptions: SluggerOptions<D>): Model<D> {
 
   model.prototype[delegatedSaveFunction] = model.prototype.save;
 
-  model.prototype.save = async function (options, fn): Promise<D> {
+  model.prototype.save = async function (saveOptions, fn): Promise<D> {
 
-    if (typeof options === 'function') {
-      fn = options;
-      options = undefined;
+    if (typeof saveOptions === 'function') {
+      fn = saveOptions;
+      saveOptions = undefined;
     }
 
     let product: D;
     let error;
 
     try {
-      product = await saveSlugWithRetries(this, options);
+      product = await saveSlugWithRetries(this, sluggerOptions, saveOptions);
     } catch (e) {
       error = e;
     }
@@ -91,20 +91,19 @@ export function wrap<D extends Document> (model: Model<D>): Model<D> {
 
 }
 
-export async function saveSlugWithRetries<D extends Document> (document: D, options?: SaveOptions): Promise<D> {
+export async function saveSlugWithRetries<D extends Document> (document: D, sluggerOptions: SluggerOptions<D>, saveOptions?: SaveOptions): Promise<D> {
 
   for (;;) {
 
     try {
 
       const saveFunction = document[delegatedSaveFunction] || document.save;
-      return await saveFunction.call(document, options);
+      return await saveFunction.call(document, saveOptions);
 
     } catch (e) {
 
       if (e instanceof MongoError) {
-        // TODO check which index is affected
-        if (e.code === 11000) {
+        if (e.code === 11000 && extractIndexNameFromError(e.message) === sluggerOptions.index) {
           const slugDocument: SlugDocumentAttachment = document as any;
           slugDocument.slugAttempt = (slugDocument.slugAttempt || 0) + 1;
           continue;
@@ -124,4 +123,10 @@ export function createDefaultGenerator (paths: string | string[]): GeneratorFunc
     }
     return limax(values.join('-'));
   };
+}
+
+export function extractIndexNameFromError (message: string): string {
+  // https://github.com/matteodelabre/mongoose-beautiful-unique-validation/blob/master/index.js#L5
+  const matches = /index: (.+) dup key:/.exec(message);
+  return matches ? matches[1] : undefined;
 }
