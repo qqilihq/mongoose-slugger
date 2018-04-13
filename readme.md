@@ -72,7 +72,7 @@ Development
 
 Install NPM dependencies with `yarn`.
 
-To execute the tests, use the `test.sh` script. It starts a new MongoDB Docker container and then executes the test cases.
+To execute the tests, use the `test.sh` script. It starts a new MongoDB Docker container and then executes the test cases. The test coverage report can be found in `coverage/index.html`.
 
 
 Why yet Another Tool?

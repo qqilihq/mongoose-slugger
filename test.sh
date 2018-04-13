@@ -8,4 +8,4 @@ function finish {
 trap finish EXIT
 
 docker run -p 27017:27017 --name slugger-test-mongodb -d --rm mongo:3.4.6
-yarn test
+yarn test:coverage
