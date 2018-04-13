@@ -185,12 +185,44 @@ describe('slugger', () => {
 
     describe('callbacks', () => {
 
+      it('does not return promises when using callbacks', (done) => {
+        const result = new Model({}).save((err, product) => done(err));
+        expect(result).to.be(undefined);
+      });
+
       it('generates slug', (done) => {
         // tslint:disable-next-line:no-floating-promises
         new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' }).save((err, product) => {
           expect(err).to.be(undefined);
           expect(product).to.be.an('object');
           done();
+        });
+      });
+
+      it('generates another slug in case of a conflict', (done) => {
+        // tslint:disable-next-line:no-floating-promises
+        new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' }).save((err, product) => {
+          if (err) return done(err);
+          // tslint:disable-next-line:no-floating-promises
+          new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john2@example.com' }).save((err, product) => {
+            if (err) return done(err);
+            expect(err).to.be(undefined);
+            expect(product.slug).to.eql('john-doe-2');
+            done();
+          });
+        });
+      });
+
+      it('propagates error which is caused by duplicate on different index', (done) => {
+        // tslint:disable-next-line:no-floating-promises
+        new Model({ firstname: 'john', lastname: 'doe', email: 'john@example.com' }).save((err, product) => {
+          if (err) return done(err);
+          // tslint:disable-next-line:no-floating-promises
+          new Model({ firstname: 'john', lastname: 'dope', email: 'john@example.com' }).save((err, product) => {
+            expect(err).to.be.an('object');
+            expect(err.code).to.eql(11000);
+            done();
+          });
         });
       });
 

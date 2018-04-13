@@ -62,29 +62,22 @@ export function wrap<D extends Document> (model: Model<D>, sluggerOptions: Slugg
 
   model.prototype[delegatedSaveFunction] = model.prototype.save;
 
-  model.prototype.save = async function (saveOptions, fn): Promise<D> {
+  model.prototype.save = function (saveOptions, fn): Promise<D> {
 
     if (typeof saveOptions === 'function') {
       fn = saveOptions;
       saveOptions = undefined;
     }
 
-    let product: D;
-    let error;
+    const promise = saveSlugWithRetries(this, sluggerOptions, saveOptions);
 
-    try {
-      product = await saveSlugWithRetries(this, sluggerOptions, saveOptions);
-    } catch (e) {
-      error = e;
+    if (!fn) {
+      return promise;
     }
 
-    if (fn) {
-      fn.call(this, error, product);
-    }
-    if (error) {
-      throw error;
-    }
-    return product;
+    // nb: don't do then().catch() -- https://stackoverflow.com/a/40642436
+    promise.then(result => fn(undefined, result), reason => fn(reason));
+
   };
 
   return model;
