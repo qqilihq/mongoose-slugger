@@ -1,11 +1,13 @@
 {
   "name": "slugger-plugin",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/slugger.js",
+  "types": "dist/slugger.d.ts",
   "license": "MIT",
   "scripts": {
     "test": "mocha",
-    "lint": "tslint -p tsconfig.json 'lib/**/*.ts' 'test/**/*.ts'"
+    "lint": "tslint -p tsconfig.json 'lib/**/*.ts' 'test/**/*.ts'",
+    "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "limax": "^1.6.0",
