@@ -62,6 +62,10 @@ describe('slugger', () => {
 
   describe('options validation', () => {
 
+    it('throws when creating config with missing object', () => {
+      expect(() => new slugger.SluggerOptions()).to.throwError(/config is missing./);
+    });
+
     it('throws error when configuration is missing', () => {
       expect(slugger.plugin).withArgs().to.throwError(/options are missing./);
     });

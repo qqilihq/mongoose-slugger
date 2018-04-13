@@ -14,7 +14,7 @@ export class SluggerOptions<D extends Document> {
   // TODO add a `maxAttempts` option? -- when reached, stop trying and throw the error
   constructor (init?: Partial<SluggerOptions<D>>) {
     if (!init) {
-      throw new Error('config is missing');
+      throw new Error('config is missing.');
     }
     if (!init.index) {
       throw new Error('`index` is missing.');
