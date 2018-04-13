@@ -1,6 +1,6 @@
 import { Document, Schema, Model, SaveOptions } from 'mongoose';
 import { MongoError } from 'mongodb';
-import * as limax from 'limax';
+const limax = require('limax');
 
 export interface GeneratorFunction<D extends Document> {
   (doc: D, attempt: number): string;
@@ -13,21 +13,25 @@ export class SluggerOptions<D extends Document> {
   readonly index: string;
   // TODO add a `maxAttempts` option? -- when reached, stop trying and throw the error
   constructor (init?: Partial<SluggerOptions<D>>) {
+    if (!init) {
+      throw new Error('config is missing');
+    }
     if (!init.index) {
       throw new Error('`index` is missing.');
     }
 
-    Object.assign(this, init);
+    this.index = init.index;
 
     // `slug` defaults to 'slug'
-    this.slugPath = this.slugPath || 'slug';
+    this.slugPath = init.slugPath || 'slug';
 
     // build generator function from `generateFrom` property
-    if (this.generateFrom) {
-      this.generator = createDefaultGenerator(this.generateFrom);
-    }
-    // neither `generateFrom` nor `generator` -- error
-    if (!this.generator) {
+    if (init.generateFrom) {
+      this.generator = createDefaultGenerator(init.generateFrom);
+    } else if (init.generator) {
+      this.generator = init.generator;
+    } else {
+      // neither `generateFrom` nor `generator` -- error
       throw new Error('`generateFrom` or `generator` is missing.');
     }
   }
@@ -46,7 +50,7 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
   }
 
   // make sure, that only one slugger instance is used per model (for now)
-  const plugins: any[] = schema['plugins'].filter(p => p.fn === plugin);
+  const plugins: any[] = (schema as any).plugins.filter((p: any) => p.fn === plugin);
   if (plugins.length > 1) {
     throw new Error('slugger was added more than once.');
   }
@@ -75,7 +79,7 @@ export function wrap<D extends Document> (model: Model<D>, sluggerOptions: Slugg
 
   model.prototype[delegatedSaveFunction] = model.prototype.save;
 
-  model.prototype.save = function (saveOptions, fn): Promise<D> {
+  model.prototype.save = function (saveOptions: any, fn: any) {
 
     if (typeof saveOptions === 'function') {
       fn = saveOptions;
@@ -103,7 +107,7 @@ export async function saveSlugWithRetries<D extends Document> (document: D, slug
 
     try {
 
-      const saveFunction = document[delegatedSaveFunction] || document.save;
+      const saveFunction = (document as any)[delegatedSaveFunction] || document.save;
       return await saveFunction.call(document, saveOptions);
 
     } catch (e) {
@@ -123,7 +127,7 @@ export async function saveSlugWithRetries<D extends Document> (document: D, slug
 
 export function createDefaultGenerator (paths: string | string[]): GeneratorFunction<Document> {
   return (doc, attempt) => {
-    const values = [].concat(paths).map(path => doc.get(path));
+    const values = ([] as string[]).concat(paths).map(path => doc.get(path));
     if (attempt > 0) {
       values.push(attempt + 1);
     }
@@ -131,8 +135,8 @@ export function createDefaultGenerator (paths: string | string[]): GeneratorFunc
   };
 }
 
-export function extractIndexNameFromError (message: string): string {
+export function extractIndexNameFromError (msg: string): string | undefined {
   // https://github.com/matteodelabre/mongoose-beautiful-unique-validation/blob/master/index.js#L5
-  const matches = /index: (.+) dup key:/.exec(message);
+  const matches = /index: (.+) dup key:/.exec(msg);
   return matches ? matches[1] : undefined;
 }

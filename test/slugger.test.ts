@@ -1,7 +1,7 @@
 import expect = require('expect.js');
 import * as mongoose from 'mongoose';
 import * as slugger from '../lib/slugger';
-import * as limax from 'limax';
+const limax = require('limax');
 
 interface IMyDocument extends mongoose.Document {
   firstname: string;
@@ -31,7 +31,7 @@ describe('slugger', () => {
     schema.index({ city: 1, country: 1, slug: 1 }, { name: 'city_country_slug', unique: true });
     schema.index({ email: 1 }, { name: 'email', unique: true });
 
-    sluggerOptions = new slugger.SluggerOptions({
+    sluggerOptions = new slugger.SluggerOptions<IMyDocument>({
 
       slugPath: 'slug',
 
@@ -100,7 +100,7 @@ describe('slugger', () => {
 
   describe('default generator', () => {
 
-    let doc;
+    let doc: IMyDocument;
 
     beforeEach(() => {
       doc = new Model({ firstname: 'john', lastname: 'doe' });
@@ -149,7 +149,7 @@ describe('slugger', () => {
     // mongoose.set('debug', true);
 
     before(() => mongoose.connect('mongodb://localhost:27017/slugger-test'));
-    beforeEach(() => Model.remove({}));
+    beforeEach(() => Model.remove({}).exec());
     after(() => mongoose.connection.close());
 
     describe('using helper function', () => {
