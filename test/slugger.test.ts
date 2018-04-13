@@ -70,10 +70,30 @@ describe('slugger', () => {
       expect(() => new slugger.SluggerOptions({ index: 'slug' })).to.throwError(/`generateFrom` or `generator` is missing./);
     });
 
+    it('throws error when index is missing', () => {
+      expect(() => new slugger.SluggerOptions({})).to.throwError(/`index` is missing./);
+    });
+
     it('throws error when specified index does not exist', () => {
       const schema = new mongoose.Schema({ name: String });
       const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'does_not_exist' });
       expect(slugger.plugin).withArgs(schema, sluggerOptions).to.throwError(/schema contains no index with name 'does_not_exist'./);
+    });
+
+    it('throws error when applied more than once on a single schema', () => {
+      const schema = new mongoose.Schema({ name: String });
+      schema.index({ name: 1 }, { name: 'name', unique: true });
+      const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'name' });
+      schema.plugin(slugger.plugin, sluggerOptions);
+      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/slugger was added more than once./);
+    });
+
+    it('throws error when index is not unique', () => {
+      const schema = new mongoose.Schema({ name: String });
+      schema.index({ name: 1 }, { name: 'name' });
+      const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'name' });
+      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/the index 'name' is not unique./);
+
     });
 
   });

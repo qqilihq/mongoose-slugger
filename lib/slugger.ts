@@ -13,6 +13,10 @@ export class SluggerOptions<D extends Document> {
   readonly index: string;
   // TODO add a `maxAttempts` option? -- when reached, stop trying and throw the error
   constructor (init?: Partial<SluggerOptions<D>>) {
+    if (!init.index) {
+      throw new Error('`index` is missing.');
+    }
+
     Object.assign(this, init);
 
     // `slug` defaults to 'slug'
@@ -41,10 +45,20 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
     throw new Error('options are missing.');
   }
 
+  // make sure, that only one slugger instance is used per model (for now)
+  const plugins: any[] = schema['plugins'].filter(p => p.fn === plugin);
+  if (plugins.length > 1) {
+    throw new Error('slugger was added more than once.');
+  }
+
   // make sure the specified index exists
   const indices: any[][] = schema.indexes();
-  if (!indices.find(entry => entry.length > 1 && entry[1].name === options.index)) {
+  const index = indices.find(entry => entry.length > 1 && entry[1].name === options.index);
+  if (!index) {
     throw new Error(`schema contains no index with name '${options.index}'.`);
+  }
+  if (!index[1].unique) {
+    throw new Error(`the index '${options.index}' is not unique.`);
   }
 
   schema.pre('validate', function (next) {
