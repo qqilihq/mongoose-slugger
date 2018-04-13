@@ -17,6 +17,14 @@ There exist several similar Mongoose plugins already, however, none of them fit 
 
 * It must be possible to specify the slug generation strategy.
 
+Caveats
+-------
+
+1. For now, only **one** slugger instance per schema can be used.
+
+2. In the very worst case, this will perform a very high amount of attempts to insert. This is by design, as we assume that potential conflicts are relatively rare and, if they happen, can be circumvented by an acceptable amount of retries.
+
+
 Usage
 -----
 
@@ -32,8 +40,8 @@ const schema = new mongoose.Schema({
 // here, the slugs must be unique for each city
 schema.index({ city: 1, slug: 1 }, { name: 'city_slug', unique: true });
 
-// set the plugin options
-schema.plugin(slugger.plugin, {
+// create the configuration
+const sluggerOptions = new slugger.SluggerOptions({
   // the property path which stores the slug value
   slugPath: 'slug',
   // specify the properties which will be used for generating the slug
@@ -42,10 +50,13 @@ schema.plugin(slugger.plugin, {
   index: 'city_slug'
 });
 
+// add the plugin
+schema.plugin(slugger.plugin, sluggerOptions);
+
 const Model = mongoose.model('MyModel', schema);
 
 // make sure to wrap to Mongoose model
-Model = slugger.wrap(Model);
+Model = slugger.wrap(Model, sluggerOptions);
 ```
 
 Development
