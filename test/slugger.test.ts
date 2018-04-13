@@ -59,7 +59,11 @@ describe('slugger', () => {
 
   describe('options validation', () => {
 
-    it('throws error neither when `generateFrom` or `generate` is given', () => {
+    it('throws error when configuration is missing', () => {
+      expect(slugger.plugin).withArgs().to.throwError(/options are missing./);
+    });
+
+    it('throws error when neither `generateFrom` nor `generate` is given', () => {
       expect(slugger.plugin).withArgs(null, { index: 'slug' }).to.throwError(/`generateFrom` or `generator` is missing./);
     });
 

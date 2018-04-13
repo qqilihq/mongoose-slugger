@@ -22,6 +22,10 @@ const delegatedSaveFunction = '_sluggerSaveDelegate';
 
 export function plugin (schema: Schema, options?: SluggerOptions<any>) {
 
+  if (!options) {
+    throw new Error('options are missing.');
+  }
+
   // `slug` defaults to 'slug'
   const slugPath = options.slugPath || 'slug';
 
