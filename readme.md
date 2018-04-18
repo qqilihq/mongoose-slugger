@@ -63,8 +63,8 @@ schema.plugin(slugger.plugin, sluggerOptions);
 
 const Model = mongoose.model('MyModel', schema);
 
-// make sure to wrap to Mongoose model
-Model = slugger.wrap(Model, sluggerOptions);
+// make sure to wrap the Mongoose model
+Model = slugger.wrap(Model);
 ```
 
 Development
