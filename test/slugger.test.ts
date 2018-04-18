@@ -56,7 +56,7 @@ describe('slugger', () => {
     schema.plugin(slugger.plugin, sluggerOptions);
 
     Model = mongoose.model<IMyDocument>('SlugModel', schema);
-    Model = slugger.wrap(Model, sluggerOptions);
+    Model = slugger.wrap(Model);
 
   });
 
@@ -98,6 +98,12 @@ describe('slugger', () => {
       const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'name' });
       expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/the index 'name' is not unique./);
 
+    });
+
+    it('throws error when calling `wrap` on a model without plugin', () => {
+      const schema = new mongoose.Schema({ name: String });
+      const model = mongoose.model('TestModel', schema);
+      expect(() => slugger.wrap(model)).to.throwError(/slugger was not added./);
     });
 
   });

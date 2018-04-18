@@ -50,7 +50,7 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
   }
 
   // make sure, that only one slugger instance is used per model (for now)
-  const plugins: any[] = (schema as any).plugins.filter((p: any) => p.fn === plugin);
+  const plugins = getSluggerPlugins(schema);
   if (plugins.length > 1) {
     throw new Error('slugger was added more than once.');
   }
@@ -75,7 +75,16 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
 
 }
 
-export function wrap<D extends Document> (model: Model<D>, sluggerOptions: SluggerOptions<D>): Model<D> {
+export function wrap<D extends Document> (model: Model<D>): Model<D> {
+
+  const plugins = getSluggerPlugins(model.schema);
+  if (plugins.length === 0) {
+    throw new Error('slugger was not added to this model’s schema.');
+  }
+  const sluggerOptions = plugins[0].opts;
+  if (!(sluggerOptions instanceof SluggerOptions)) {
+    throw new Error('attached `opts` are not of type SluggerOptions.');
+  }
 
   model.prototype[delegatedSaveFunction] = model.prototype.save;
 
@@ -139,4 +148,9 @@ export function extractIndexNameFromError (msg: string): string | undefined {
   // https://github.com/matteodelabre/mongoose-beautiful-unique-validation/blob/master/index.js#L5
   const matches = /index: (.+) dup key:/.exec(msg);
   return matches ? matches[1] : undefined;
+}
+
+/** Gets all Slugger plugins which are assigned to the given schema. */
+function getSluggerPlugins (schema: Schema): any[] {
+  return (schema as any).plugins.filter((p: any) => p.fn === plugin);
 }
