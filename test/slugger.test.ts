@@ -158,7 +158,9 @@ describe('slugger', () => {
 
     // mongoose.set('debug', true);
 
-    before(() => mongoose.connect('mongodb://localhost:27017/slugger-test'));
+    before(() => mongoose.connect('mongodb://localhost:27017/slugger-test', {
+      connectTimeoutMS: 30 * 1000 /* 30 seconds */
+    }));
     beforeEach(() => Model.remove({}).exec());
     after(() => mongoose.connection.close());
 
