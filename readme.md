@@ -1,6 +1,9 @@
 Slugger for Mongoose
 ====================
 
+[![Run Status](https://api.shippable.com/projects/5ad0b0f5cb68540600e4fb75/badge?branch=master)](https://app.shippable.com/github/qqilihq/mongoose-slugger)
+[![Coverage Badge](https://api.shippable.com/projects/5ad0b0f5cb68540600e4fb75/coverageBadge?branch=master)](https://app.shippable.com/github/qqilihq/mongoose-slugger)
+
 Automatically generates so called “slugs” for [Mongoose](http://mongoosejs.com) documents. Slugs are typically used as human-readable parts of URLs instead of machine-readable identifiers (see e.g. [here](https://stackoverflow.com/questions/427102/what-is-a-slug-in-django) or [here](https://stackoverflow.com/questions/19335215/what-is-a-slug)).
 
 In case a slug is already taken by an existing document, the plugin automatically creates a new one (typically using a sequence number) and keeps trying until the document can be saved successfully.
