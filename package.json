@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "limax": "^1.6.0",
+    "mocha-junit-reporter": "^1.17.0",
     "mongoose": "^5.0.14"
   },
   "devDependencies": {
