@@ -1,0 +1,49 @@
+## based on template from here:
+## https://github.com/devops-recipes/basic-node/blob/master/shippable.yml
+
+# Language setting http://docs.shippable.com/ci/languages/node/
+language: node_js
+
+node_js:
+  - 8.9.4
+
+# use this to control what branches get built.
+# http://docs.shippable.com/ci/advancedOptions/branches/
+branches:
+  only:
+    - master
+
+# using pre-defined build variables
+# full list http://docs.shippable.com/ci/advancedOptions/environmentVariables/
+env:
+  global:
+    - TEST_RESULTS_DIR=$SHIPPABLE_REPO_DIR/shippable/testresults
+    - CODE_COVERAGE_DIR=$SHIPPABLE_REPO_DIR/shippable/codecoverage
+    - MOD_LOC=$SHIPPABLE_REPO_DIR/node_modules/.bin/
+
+build:
+
+  # integration tests require a running MongDB
+  pre_ci:
+    - docker run -p 27017:27017 --name slugger-test-mongodb -d --rm mongo:3.4.6
+
+  # http://docs.shippable.com/ci/shippableyml/#ci
+  ci:
+    # npm mirrors can sometimes be flacky, better to use shippable_retry
+    # http://docs.shippable.com/ci/advancedOptions/retry/
+    - shippable_retry yarn
+
+    - yarn lint
+
+    # run integration tests (require the running MongDB)
+    # and keep test and coverage results
+    - mkdir -p $TEST_RESULTS_DIR && mkdir -p $CODE_COVERAGE_DIR
+    - $MOD_LOC/nyc --reporter=cobertura --report-dir=$CODE_COVERAGE_DIR mocha -R mocha-junit-reporter --reporter-options mochaFile=$TEST_RESULTS_DIR/testresults.xml
+
+    - yarn build
+
+  # cleanup -- stop the MongoDB
+  on_success:
+    - docker stop slugger-test-mongodb || true
+  on_failure:
+    - docker stop slugger-test-mongodb || true
