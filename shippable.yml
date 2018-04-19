@@ -31,16 +31,16 @@ build:
   ci:
     # npm mirrors can sometimes be flacky, better to use shippable_retry
     # http://docs.shippable.com/ci/advancedOptions/retry/
-    - shippable_retry yarn
+    - shippable_retry npm install
 
-    - yarn lint
+    - npm run lint
 
     # run integration tests (require the running MongDB)
     # and keep test and coverage results
     - mkdir -p $TEST_RESULTS_DIR && mkdir -p $CODE_COVERAGE_DIR
     - $MOD_LOC/nyc --reporter=cobertura --report-dir=$CODE_COVERAGE_DIR mocha -R mocha-junit-reporter --reporter-options mochaFile=$TEST_RESULTS_DIR/testresults.xml
 
-    - yarn build
+    - npm run build
 
   # cleanup -- stop the MongoDB
   on_success:
