@@ -1,6 +1,6 @@
 {
   "name": "mongoose-slugger-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/slugger.js",
   "types": "dist/slugger.d.ts",
   "license": "MIT",
