@@ -1,4 +1,5 @@
 import { Document, Schema, Model, SaveOptions } from 'mongoose';
+import { MongoError } from 'mongodb';
 const limax = require('limax');
 
 export interface GeneratorFunction<D extends Document> {
@@ -169,6 +170,6 @@ function getSluggerPlugins (schema: Schema): any[] {
   return (schema as any).plugins.filter((p: any) => p.fn === plugin);
 }
 
-function isMongoError (e: any): boolean {
+function isMongoError (e: any): e is MongoError {
   return ['MongoError', 'BulkWriteError'].indexOf(e.name) !== -1;
 }
