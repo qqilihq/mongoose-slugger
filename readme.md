@@ -1,5 +1,4 @@
-Slugger for Mongoose
-====================
+# Slugger for Mongoose
 
 [![Run Status](https://api.shippable.com/projects/5ad0b0f5cb68540600e4fb75/badge?branch=master)](https://app.shippable.com/github/qqilihq/mongoose-slugger)
 [![Coverage Badge](https://api.shippable.com/projects/5ad0b0f5cb68540600e4fb75/coverageBadge?branch=master)](https://app.shippable.com/github/qqilihq/mongoose-slugger)
@@ -28,22 +27,19 @@ There exist several similar Mongoose plugins already, however, none of them fit 
 
 * It must be possible to specify the slug generation strategy.
 
-Caveats
--------
+## Caveats
 
 1. For now, only **one** slugger instance per schema can be used.
 
 2. In the very worst case, this will perform a very high amount of attempts to insert. This is by design, as we assume that potential conflicts are relatively rare and, if they happen, can be circumvented by an acceptable amount of retries.
 
-Installation
-------------
+## Installation
 
 ```
 $ yarn add mongoose-slugger-plugin
 ```
 
-Usage
------
+## Usage
 
 **Note:** A complete, working example is available in [this](https://github.com/qqilihq/mongoose-slugger-demo) repository.
 
@@ -78,8 +74,7 @@ const Model = mongoose.model('MyModel', schema);
 Model = slugger.wrap(Model);
 ```
 
-Development
------------
+## Development
 
 Install NPM dependencies with `yarn`.
 
@@ -88,8 +83,7 @@ To execute the tests, use the `test.sh` script. It starts a new MongoDB Docker c
 For the best development experience, make sure that your editor supports [TSLint](https://palantir.github.io/tslint/usage/third-party-tools/) and [EditorConfig](http://editorconfig.org).
 
 
-Why yet Another Tool?
----------------------
+## Why yet Another Tool?
 
 There’s a plethora of similar plugins, most of them old and abandoned though. Here’s a list, sorted by recent activity (first was updated recently when writing this):
 
@@ -104,8 +98,7 @@ There’s a plethora of similar plugins, most of them old and abandoned though. 
 
 
 
-Contributing
-------------
+## Contributing
 
 Pull requests are very welcome. Feel free to discuss bugs or new features by opening a new [issue](https://github.com/qqilihq/mongoose-slugger/issues).
 
