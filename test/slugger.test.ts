@@ -35,7 +35,7 @@ describe('slugger', () => {
 
       slugPath: 'slug',
 
-      generator: (doc, attempt) => {
+      generateFrom: (doc, attempt) => {
         let result = limax([ doc.firstname, doc.lastname ].join(' '));
         if (attempt > 0) {
           result += `-${attempt + 1}`;
@@ -63,6 +63,7 @@ describe('slugger', () => {
   describe('options validation', () => {
 
     it('throws when creating config with missing object', () => {
+      // @ts-ignore
       expect(() => new slugger.SluggerOptions()).to.throwError(/config is missing./);
     });
 
@@ -70,11 +71,12 @@ describe('slugger', () => {
       expect(slugger.plugin).withArgs().to.throwError(/options are missing./);
     });
 
-    it('throws error when neither `generateFrom` nor `generate` is given', () => {
-      expect(() => new slugger.SluggerOptions({ index: 'slug' })).to.throwError(/`generateFrom` or `generator` is missing./);
+    it('throws error when neither `generateFrom` is given', () => {
+      expect(() => new slugger.SluggerOptions({ index: 'slug' } as any)).to.throwError(/`generateFrom` is missing./);
     });
 
     it('throws error when index is missing', () => {
+      // @ts-ignore
       expect(() => new slugger.SluggerOptions({})).to.throwError(/`index` is missing./);
     });
 

@@ -5,18 +5,26 @@ export interface GeneratorFunction<D extends Document> {
   (doc: D, attempt: number): string;
 }
 
+export interface SluggerInitOptions<D extends Document> {
+  slugPath?: string;
+  generateFrom: string | string[] | GeneratorFunction<D>;
+  index: string;
+}
+
 export class SluggerOptions<D extends Document> {
   readonly slugPath: string;
   readonly generator: GeneratorFunction<D>;
-  readonly generateFrom?: string | string[];
   readonly index: string;
   // TODO add a `maxAttempts` option? -- when reached, stop trying and throw the error
-  constructor (init?: Partial<SluggerOptions<D>>) {
+  constructor (init: SluggerInitOptions<D>) {
     if (!init) {
       throw new Error('config is missing.');
     }
     if (!init.index) {
       throw new Error('`index` is missing.');
+    }
+    if (!init.generateFrom) {
+      throw new Error('`generateFrom` is missing.');
     }
 
     this.index = init.index;
@@ -25,13 +33,12 @@ export class SluggerOptions<D extends Document> {
     this.slugPath = init.slugPath || 'slug';
 
     // build generator function from `generateFrom` property
-    if (init.generateFrom) {
+    if (typeof init.generateFrom === 'function') {
+      this.generator = init.generateFrom;
+    } else if (typeof init.generateFrom === 'string' || Array.isArray(init.generateFrom)) {
       this.generator = createDefaultGenerator(init.generateFrom);
-    } else if (init.generator) {
-      this.generator = init.generator;
     } else {
-      // neither `generateFrom` nor `generator` -- error
-      throw new Error('`generateFrom` or `generator` is missing.');
+      throw new Error('`generateFrom` must be a string, array, or function.');
     }
   }
 }
