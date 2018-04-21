@@ -43,12 +43,6 @@ describe('slugger', () => {
         return result;
       },
 
-      // TODO add an alternative syntax like so
-      // generateFrom: [ 'firstname', 'lastname' ],
-
-      // TODO make it also work with nested fields like so
-      // generateFrom: [ 'name.first', 'name.last' ],
-
       index: 'city_country_slug'
 
     });
