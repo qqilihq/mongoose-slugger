@@ -35,9 +35,17 @@ Caveats
 
 2. In the very worst case, this will perform a very high amount of attempts to insert. This is by design, as we assume that potential conflicts are relatively rare and, if they happen, can be circumvented by an acceptable amount of retries.
 
+Installation
+------------
+
+```
+$ yarn add mongoose-slugger-plugin
+```
 
 Usage
 -----
+
+**Note:** A complete, working example is available in [this](https://github.com/qqilihq/mongoose-slugger-demo) repository.
 
 ```
 const schema = new mongoose.Schema({
