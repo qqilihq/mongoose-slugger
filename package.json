@@ -4,6 +4,20 @@
   "main": "dist/slugger.js",
   "types": "dist/slugger.d.ts",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/qqilihq/mongoose-slugger/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/qqilihq/mongoose-slugger.git"
+  },
+  "keywords": [
+    "mongoose",
+    "mongodb",
+    "slug",
+    "typescript",
+    "mongoose-plugin"
+  ],
   "scripts": {
     "test": "mocha",
     "lint": "tslint -p tsconfig.json 'lib/**/*.ts' 'test/**/*.ts'",
