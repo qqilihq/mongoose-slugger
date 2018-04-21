@@ -1,5 +1,5 @@
 {
-  "name": "slugger-plugin",
+  "name": "mongoose-slugger-plugin",
   "version": "1.0.0",
   "main": "dist/slugger.js",
   "types": "dist/slugger.d.ts",
