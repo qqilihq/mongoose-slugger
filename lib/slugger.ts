@@ -1,5 +1,4 @@
 import { Document, Schema, Model, SaveOptions } from 'mongoose';
-import { MongoError } from 'mongodb';
 const limax = require('limax');
 
 export interface GeneratorFunction<D extends Document> {
@@ -121,8 +120,8 @@ export async function saveSlugWithRetries<D extends Document> (document: D, slug
 
     } catch (e) {
 
-      if (e instanceof MongoError) {
-        if (e.code === 11000 && extractIndexNameFromError(e.message) === sluggerOptions.index) {
+      if (isMongoError(e)) {
+        if (e.code === 11000 && e.message && extractIndexNameFromError(e.message) === sluggerOptions.index) {
           const slugDocument: SlugDocumentAttachment = document as any;
           slugDocument.slugAttempt = (slugDocument.slugAttempt || 0) + 1;
           continue;
@@ -153,4 +152,8 @@ export function extractIndexNameFromError (msg: string): string | undefined {
 /** Gets all Slugger plugins which are assigned to the given schema. */
 function getSluggerPlugins (schema: Schema): any[] {
   return (schema as any).plugins.filter((p: any) => p.fn === plugin);
+}
+
+function isMongoError (e: any): boolean {
+  return ['MongoError', 'BulkWriteError'].indexOf(e.name) !== -1;
 }
