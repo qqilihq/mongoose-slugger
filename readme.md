@@ -83,6 +83,18 @@ To execute the tests, use the `test.sh` script. It starts a new MongoDB Docker c
 
 For the best development experience, make sure that your editor supports [TSLint](https://palantir.github.io/tslint/usage/third-party-tools/) and [EditorConfig](http://editorconfig.org).
 
+## Releasing to NPM
+
+Commit all changes and run the following:
+
+```
+$ npm login
+$ npm version <update_type>
+$ npm publish
+```
+
+… where `<update_type>` is one of `patch`, `minor`, or `major`. This will update the `package.json`, and create a tagged Git commit with the version number.
+
 
 ## Why yet Another Tool?
 
