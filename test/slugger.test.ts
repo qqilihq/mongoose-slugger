@@ -201,8 +201,19 @@ describe('slugger', () => {
       });
 
       it('generates no slug when explicity specified', async () => {
-        const doc = await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'germany', slug: 'john' });
+        const doc = await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', slug: 'john' });
         expect(doc.slug).to.eql('john');
+      });
+
+      it('does not retry when explicitly specified and conflicts', async () => {
+        await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john.doe@example.com', slug: 'john' });
+        try {
+          await Model.create({ firstname: 'john', lastname: 'dope', city: 'memphis', country: 'usa', email: 'john.dope@example.com', slug: 'john' });
+          expect().fail();
+        } catch (e) {
+          expect(e).to.be.an('object');
+          expect(e.code).to.eql(11000);
+        }
       });
 
       it('correctly propagates error which is caused by duplicate on different index', async () => {

@@ -37,6 +37,7 @@ export class SluggerOptions<D extends Document> {
 }
 
 interface SlugDocumentAttachment {
+  generateSlugs: boolean;
   slugAttempt: number;
 }
 
@@ -111,6 +112,11 @@ export function wrap<D extends Document> (model: Model<D>): Model<D> {
 
 export async function saveSlugWithRetries<D extends Document> (document: D, sluggerOptions: SluggerOptions<D>, saveOptions?: SaveOptions): Promise<D> {
 
+  const slugDocument: SlugDocumentAttachment = document as any;
+  // only generate/retry slugs, when no slug
+  // is explicitly given in the document
+  slugDocument.generateSlugs = document.get(sluggerOptions.slugPath) == null;
+
   for (;;) {
 
     try {
@@ -121,8 +127,7 @@ export async function saveSlugWithRetries<D extends Document> (document: D, slug
     } catch (e) {
 
       if (isMongoError(e)) {
-        if (e.code === 11000 && e.message && extractIndexNameFromError(e.message) === sluggerOptions.index) {
-          const slugDocument: SlugDocumentAttachment = document as any;
+        if (slugDocument.generateSlugs && e.code === 11000 && e.message && extractIndexNameFromError(e.message) === sluggerOptions.index) {
           slugDocument.slugAttempt = (slugDocument.slugAttempt || 0) + 1;
           continue;
         }
