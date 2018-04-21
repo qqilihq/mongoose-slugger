@@ -36,12 +36,13 @@ export class SluggerOptions<D extends Document> {
   }
 }
 
-interface SlugDocumentAttachment {
-  generateSlugs: boolean;
-  slugAttempt: number;
+class SlugDocumentAttachment {
+  slugAttempt: number = 0;
 }
 
 const delegatedSaveFunction = '_sluggerSaveDelegate';
+
+const attachmentPropertyName = '_sluggerAttachment';
 
 export function plugin (schema: Schema, options?: SluggerOptions<any>) {
 
@@ -66,9 +67,15 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
   }
 
   schema.pre('validate', function (next) {
-    const attempt = (this as any as SlugDocumentAttachment).slugAttempt || 0;
-    if (!this.get(options.slugPath) || attempt) {
-      this.set(options.slugPath, options.generator(this, attempt));
+    let slugAttachment = ((this as any)[attachmentPropertyName] as SlugDocumentAttachment);
+    // only generate/retry slugs, when no slug
+    // is explicitly given in the document
+    if (!slugAttachment && this.get(options.slugPath) == null) {
+      slugAttachment = new SlugDocumentAttachment();
+      (this as any)[attachmentPropertyName] = slugAttachment;
+    }
+    if (slugAttachment) {
+      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempt));
     }
     next();
   });
@@ -112,11 +119,6 @@ export function wrap<D extends Document> (model: Model<D>): Model<D> {
 
 export async function saveSlugWithRetries<D extends Document> (document: D, sluggerOptions: SluggerOptions<D>, saveOptions?: SaveOptions): Promise<D> {
 
-  const slugDocument: SlugDocumentAttachment = document as any;
-  // only generate/retry slugs, when no slug
-  // is explicitly given in the document
-  slugDocument.generateSlugs = document.get(sluggerOptions.slugPath) == null;
-
   for (;;) {
 
     try {
@@ -127,8 +129,9 @@ export async function saveSlugWithRetries<D extends Document> (document: D, slug
     } catch (e) {
 
       if (isMongoError(e)) {
-        if (slugDocument.generateSlugs && e.code === 11000 && e.message && extractIndexNameFromError(e.message) === sluggerOptions.index) {
-          slugDocument.slugAttempt = (slugDocument.slugAttempt || 0) + 1;
+        const slugAttachment = ((document as any)[attachmentPropertyName] as SlugDocumentAttachment);
+        if (slugAttachment && e.code === 11000 && e.message && extractIndexNameFromError(e.message) === sluggerOptions.index) {
+          slugAttachment.slugAttempt++;
           continue;
         }
       }
