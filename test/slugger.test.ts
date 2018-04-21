@@ -137,6 +137,11 @@ describe('slugger', () => {
       it('generates slug', () => {
         expect(generator(doc, 1)).to.eql('john-doe-2');
       });
+
+      it('ignores missing values', () => {
+        expect(generator(new Model({ firstname: 'john' }), 1)).to.eql('john-2');
+      });
+
     });
 
   });
