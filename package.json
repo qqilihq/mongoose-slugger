@@ -1,5 +1,6 @@
 {
   "name": "mongoose-slugger-plugin",
+  "description": "Mongoose plugin to automatically generate so called slugs (atomically)",
   "version": "1.0.1",
   "main": "dist/slugger.js",
   "types": "dist/slugger.d.ts",
