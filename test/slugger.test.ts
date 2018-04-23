@@ -1,6 +1,7 @@
 import expect = require('expect.js');
 import * as mongoose from 'mongoose';
 import * as slugger from '../lib/slugger';
+import * as utils from '../lib/sluggerUtils';
 const limax = require('limax');
 
 interface IMyDocument extends mongoose.Document {
@@ -114,7 +115,7 @@ describe('slugger', () => {
 
     describe('single property', () => {
 
-      const generator = slugger.createDefaultGenerator('firstname');
+      const generator = utils.createDefaultGenerator('firstname');
 
       it('generates slug for sequence 0', () => {
         expect(generator(doc, 0)).to.eql('john');
@@ -128,7 +129,7 @@ describe('slugger', () => {
 
     describe('multiple properties', () => {
 
-      const generator = slugger.createDefaultGenerator([ 'firstname', 'lastname' ]);
+      const generator = utils.createDefaultGenerator([ 'firstname', 'lastname' ]);
 
       it('generates slug', () => {
         expect(generator(doc, 1)).to.eql('john-doe-2');
@@ -169,14 +170,14 @@ describe('slugger', () => {
 
       it('generates another slug in case of a conflict', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' });
-        const doc2 = await slugger.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john2@example.com' }), sluggerOptions);
+        const doc2 = await utils.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john2@example.com' }), sluggerOptions);
         expect(doc2.slug).to.eql('john-doe-2');
       });
 
       it('generates slug sequence', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' }); // slug = john-doe
         for (let n = 2; n <= 10; n++) {
-          const doc = await slugger.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: `john${n}@example.com` }), sluggerOptions);
+          const doc = await utils.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: `john${n}@example.com` }), sluggerOptions);
           expect(doc.slug).to.eql(`john-doe-${n}`);
         }
       });
@@ -275,10 +276,10 @@ describe('slugger', () => {
     describe('utilities', () => {
       it('extracts index name from error message', () => {
         const message = 'E11000 duplicate key error collection: slugger-test.slugmodels index: city_country_slug dup key: { : "memphis", : "usa", : "john-doe" }';
-        expect(slugger.extractIndexNameFromError(message)).to.eql('city_country_slug');
+        expect(utils.extractIndexNameFromError(message)).to.eql('city_country_slug');
       });
       it('returns `undefined` in case of no match', () => {
-        expect(slugger.extractIndexNameFromError('foo')).to.be(undefined);
+        expect(utils.extractIndexNameFromError('foo')).to.be(undefined);
       });
     });
 
