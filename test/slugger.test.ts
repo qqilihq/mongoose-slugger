@@ -273,14 +273,17 @@ describe('slugger', () => {
 
     });
 
-    describe('utilities', () => {
-      it('extracts index name from error message', () => {
-        const message = 'E11000 duplicate key error collection: slugger-test.slugmodels index: city_country_slug dup key: { : "memphis", : "usa", : "john-doe" }';
-        expect(utils.extractIndexNameFromError(message)).to.eql('city_country_slug');
-      });
-      it('returns `undefined` in case of no match', () => {
-        expect(utils.extractIndexNameFromError('foo')).to.be(undefined);
-      });
+  });
+
+  describe('utilities', () => {
+
+    it('extracts index name from error message', () => {
+      const message = 'E11000 duplicate key error collection: slugger-test.slugmodels index: city_country_slug dup key: { : "memphis", : "usa", : "john-doe" }';
+      expect(utils.extractIndexNameFromError(message)).to.eql('city_country_slug');
+    });
+
+    it('returns `undefined` in case of no match', () => {
+      expect(utils.extractIndexNameFromError('foo')).to.be(undefined);
     });
 
   });
