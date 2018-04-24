@@ -169,7 +169,7 @@ describe('slugger', () => {
     before(() => mongoose.connect('mongodb://localhost:27017/slugger-test', {
       connectTimeoutMS: 30 * 1000 /* 30 seconds */
     }));
-    beforeEach(async () => mongoose.modelNames().forEach(async modelName => mongoose.model(modelName).remove({}).exec()));
+    beforeEach(() => Promise.all(mongoose.modelNames().map(modelName => mongoose.model(modelName).remove({}).exec())));
     after(() => mongoose.connection.close());
 
     describe('using helper function', () => {
