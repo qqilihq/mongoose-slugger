@@ -197,7 +197,7 @@ describe('slugger', () => {
           expect().fail();
         } catch (e) {
           expect(e).to.be.a(slugger.SluggerError);
-          expect(e.message).to.eql('Reached 10 attemps without being able to insert. Giving up.');
+          expect(e.message).to.eql('Reached 10 attempts without being able to insert. Giving up.');
         }
       });
 

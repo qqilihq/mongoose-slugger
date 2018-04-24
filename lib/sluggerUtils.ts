@@ -36,7 +36,7 @@ export async function saveSlugWithRetries<D extends Document> (document: D, slug
           slugAttachment.slugAttempts.push(attemptedSlug);
 
           if (sluggerOptions.maxAttempts && slugAttachment.slugAttempts.length >= sluggerOptions.maxAttempts) {
-            throw new slugger.SluggerError(`Reached ${slugAttachment.slugAttempts.length} attemps without being able to insert. Giving up.`);
+            throw new slugger.SluggerError(`Reached ${slugAttachment.slugAttempts.length} attempts without being able to insert. Giving up.`);
           }
 
           continue;
