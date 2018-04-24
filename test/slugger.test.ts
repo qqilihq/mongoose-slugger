@@ -169,7 +169,7 @@ describe('slugger', () => {
     before(() => mongoose.connect('mongodb://localhost:27017/slugger-test', {
       connectTimeoutMS: 30 * 1000 /* 30 seconds */
     }));
-    beforeEach(() => Model.remove({}).exec());
+    beforeEach(async () => mongoose.modelNames().forEach(async modelName => mongoose.model(modelName).remove({}).exec()));
     after(() => mongoose.connection.close());
 
     describe('using helper function', () => {
@@ -288,6 +288,45 @@ describe('slugger', () => {
             done();
           });
         });
+      });
+
+    });
+
+    describe('generating duplicate slugs within one sequence', () => {
+      let Model2: mongoose.Model<IMyDocument>;
+      let sluggerOptions2: slugger.SluggerOptions<IMyDocument>;
+
+      before(() => {
+
+        const schema2 = new mongoose.Schema({
+          firstname: String,
+          slug: String
+        });
+
+        schema2.index({ slug: 1 }, { name: 'slug', unique: true });
+
+        sluggerOptions2 = new slugger.SluggerOptions<IMyDocument>({
+          slugPath: 'slug',
+          generateFrom: (doc, attempt) => doc.firstname,
+          index: 'slug'
+        });
+
+        schema2.plugin(slugger.plugin, sluggerOptions2);
+
+        Model2 = mongoose.model<IMyDocument>('SlugModel2', schema2);
+        Model2 = slugger.wrap(Model2);
+
+      });
+
+      it('throws when same slugs are generated within one save cycle', async () => {
+        await Model2.create({ firstname: 'john' });
+        try {
+          await Model2.create({ firstname: 'john' });
+          expect().fail();
+        } catch (e) {
+          expect(e).to.be.a(slugger.SluggerError);
+          expect(e.message).to.eql('Already attempted slug \'john\' before. Giving up.');
+        }
       });
 
     });

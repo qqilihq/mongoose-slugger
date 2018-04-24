@@ -84,7 +84,7 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
       (this as any)[utils.attachmentPropertyName] = slugAttachment;
     }
     if (slugAttachment) {
-      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempt));
+      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length));
     }
     next();
   });
