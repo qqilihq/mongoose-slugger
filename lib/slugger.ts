@@ -9,13 +9,14 @@ export interface SluggerInitOptions<D extends Document> {
   slugPath?: string;
   generateFrom: string | string[] | GeneratorFunction<D>;
   index: string;
+  maxAttempts?: number;
 }
 
 export class SluggerOptions<D extends Document> {
   readonly slugPath: string;
   readonly generator: GeneratorFunction<D>;
   readonly index: string;
-  // TODO add a `maxAttempts` option? -- when reached, stop trying and throw the error
+  readonly maxAttempts?: number;
   constructor (init: SluggerInitOptions<D>) {
     if (!init) {
       throw new Error('config is missing.');
@@ -25,6 +26,9 @@ export class SluggerOptions<D extends Document> {
     }
     if (!init.generateFrom) {
       throw new Error('`generateFrom` is missing.');
+    }
+    if (typeof init.maxAttempts === 'number' && init.maxAttempts < 1) {
+      throw new Error('`maxAttempts` must be at least one.');
     }
 
     this.index = init.index;
@@ -40,7 +44,13 @@ export class SluggerOptions<D extends Document> {
     } else {
       throw new Error('`generateFrom` must be a string, array, or function.');
     }
+
+    this.maxAttempts = init.maxAttempts;
   }
+}
+
+export class SluggerError extends Error {
+  // nothing here
 }
 
 export function plugin (schema: Schema, options?: SluggerOptions<any>) {

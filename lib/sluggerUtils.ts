@@ -28,6 +28,11 @@ export async function saveSlugWithRetries<D extends Document> (document: D, slug
         const slugAttachment = ((document as any)[attachmentPropertyName] as SlugDocumentAttachment);
         if (slugAttachment && e.code === 11000 && e.message && extractIndexNameFromError(e.message) === sluggerOptions.index) {
           slugAttachment.slugAttempt++;
+
+          if (sluggerOptions.maxAttempts && slugAttachment.slugAttempt >= sluggerOptions.maxAttempts) {
+            throw new slugger.SluggerError(`Reached ${slugAttachment.slugAttempt} attemps without being able to insert. Giving up.`);
+          }
+
           continue;
         }
       }

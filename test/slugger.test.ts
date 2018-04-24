@@ -44,7 +44,9 @@ describe('slugger', () => {
         return result;
       },
 
-      index: 'city_country_slug'
+      index: 'city_country_slug',
+
+      maxAttempts: 10
 
     });
 
@@ -101,6 +103,10 @@ describe('slugger', () => {
       const schema = new mongoose.Schema({ name: String });
       const model = mongoose.model('TestModel', schema);
       expect(() => slugger.wrap(model)).to.throwError(/slugger was not added./);
+    });
+
+    it('throws error when `maxAttempts` is less than one', () => {
+      expect(() => new slugger.SluggerOptions({ generateFrom: 'name', index: 'name', maxAttempts: 0 })).to.throwError(/`maxAttempts` must be at least one./);
     });
 
   });
@@ -179,6 +185,19 @@ describe('slugger', () => {
         for (let n = 2; n <= 10; n++) {
           const doc = await utils.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: `john${n}@example.com` }), sluggerOptions);
           expect(doc.slug).to.eql(`john-doe-${n}`);
+        }
+      });
+
+      it('throws when `maxAttempts` has been exceeded', async () => {
+        for (let n = 0; n < 10; n++) {
+          await utils.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: `john${n}@example.com` }), sluggerOptions);
+        }
+        try {
+          await utils.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: `john@example.com` }), sluggerOptions);
+          expect().fail();
+        } catch (e) {
+          expect(e).to.be.a(slugger.SluggerError);
+          expect(e.message).to.eql('Reached 10 attemps without being able to insert. Giving up.');
         }
       });
 
