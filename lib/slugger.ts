@@ -65,6 +65,11 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
     throw new Error('slugger was added more than once.');
   }
 
+  // make sure, that the `slugPath` exists
+  if (!schema.path(options.slugPath)) {
+    throw new Error(`the slug path '${options.slugPath}' does not exist in the schema.`);
+  }
+
   // make sure the specified index exists
   const indices: any[][] = schema.indexes();
   const index = indices.find(entry => entry.length > 1 && entry[1].name === options.index);
@@ -73,6 +78,10 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
   }
   if (!index[1].unique) {
     throw new Error(`the index '${options.index}' is not unique.`);
+  }
+  // make sure, that the `slugPath` in contained in the index
+  if (!index[0].hasOwnProperty(options.slugPath)) {
+    throw new Error(`the index '${options.index}' does not contain the slug path '${options.slugPath}'.`);
   }
 
   schema.pre('validate', function (next) {

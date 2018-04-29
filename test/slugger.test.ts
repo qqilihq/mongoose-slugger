@@ -78,21 +78,21 @@ describe('slugger', () => {
     });
 
     it('throws error when specified index does not exist', () => {
-      const schema = new mongoose.Schema({ name: String });
+      const schema = new mongoose.Schema({ name: String, slug: String });
       const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'does_not_exist' });
       expect(slugger.plugin).withArgs(schema, sluggerOptions).to.throwError(/schema contains no index with name 'does_not_exist'./);
     });
 
     it('throws error when applied more than once on a single schema', () => {
-      const schema = new mongoose.Schema({ name: String });
-      schema.index({ name: 1 }, { name: 'name', unique: true });
-      const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'name' });
+      const schema = new mongoose.Schema({ name: String, slug: String });
+      schema.index({ slug: 1 }, { name: 'slug', unique: true });
+      const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'slug' });
       schema.plugin(slugger.plugin, sluggerOptions);
       expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/slugger was added more than once./);
     });
 
     it('throws error when index is not unique', () => {
-      const schema = new mongoose.Schema({ name: String });
+      const schema = new mongoose.Schema({ name: String, slug: String });
       schema.index({ name: 1 }, { name: 'name' });
       const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'name' });
       expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/the index 'name' is not unique./);
@@ -107,6 +107,19 @@ describe('slugger', () => {
 
     it('throws error when `maxAttempts` is less than one', () => {
       expect(() => new slugger.SluggerOptions({ generateFrom: 'name', index: 'name', maxAttempts: 0 })).to.throwError(/`maxAttempts` must be at least one./);
+    });
+
+    it('throws error when `slugPath` is missing in the schema', () => {
+      const schema = new mongoose.Schema({ name: String });
+      const sluggerOptions = new slugger.SluggerOptions({ generateFrom: 'name', index: 'name', slugPath: 'does_not_exist' });
+      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/the slug path 'does_not_exist' does not exist in the schema./);
+    });
+
+    it('throws error when `index` does not contain `slugPath`', () => {
+      const schema = new mongoose.Schema({ name: String, slug: String });
+      schema.index({ name: 1 }, { name: 'name_index', unique: true });
+      const sluggerOptions = new slugger.SluggerOptions({ generateFrom: 'name', index: 'name_index', slugPath: 'slug' });
+      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/the index 'name_index' does not contain the slug path 'slug'./);
     });
 
   });
