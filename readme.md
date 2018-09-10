@@ -10,7 +10,7 @@ In case a slug is already taken by an existing document, the plugin automaticall
 
 When correctly configured, the plugin will do the following:
 
-```
+```javascript
 Model.create({ firstname: 'john', lastname: 'doe' }); // slug = 'john-doe'
 Model.create({ firstname: 'jane', lastname: 'roe' }); // slug = 'jane-roe'
 Model.create({ firstname: 'john', lastname: 'doe' }); // slug = 'john-doe-2'
@@ -36,7 +36,7 @@ There exist several similar Mongoose plugins already, however, none of them fit 
 
 ## Installation
 
-```
+```shell
 $ yarn add mongoose-slugger-plugin
 ```
 
@@ -44,7 +44,7 @@ $ yarn add mongoose-slugger-plugin
 
 **Note:** A complete, working example is available in [this](https://github.com/qqilihq/mongoose-slugger-demo) repository.
 
-```
+```javascript
 const schema = new mongoose.Schema({
   firstname: String,
   lastname: String,
@@ -87,7 +87,7 @@ For the best development experience, make sure that your editor supports [TSLint
 
 Commit all changes and run the following:
 
-```
+```shell
 $ npm login
 $ npm version <update_type>
 $ npm publish
