@@ -154,13 +154,13 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
     throw new Error(`the index '${options.index}' does not contain the slug path '${options.slugPath}'.`);
   }
 
-  schema.pre('validate', function (next) {
-    let slugAttachment = ((this as any)[utils.attachmentPropertyName] as utils.SlugDocumentAttachment);
+  schema.pre('validate', function (this: any, next) {
+    let slugAttachment = this[utils.attachmentPropertyName] as utils.SlugDocumentAttachment;
     // only generate/retry slugs, when no slug
     // is explicitly given in the document
     if (!slugAttachment && this.get(options.slugPath) == null) {
       slugAttachment = new utils.SlugDocumentAttachment();
-      (this as any)[utils.attachmentPropertyName] = slugAttachment;
+      this[utils.attachmentPropertyName] = slugAttachment;
     }
     if (slugAttachment) {
       this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length));
