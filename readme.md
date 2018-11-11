@@ -69,7 +69,7 @@ const sluggerOptions = new slugger.SluggerOptions({
 // add the plugin
 schema.plugin(slugger.plugin, sluggerOptions);
 
-const Model = mongoose.model('MyModel', schema);
+let Model = mongoose.model('MyModel', schema);
 
 // make sure to wrap the Mongoose model
 Model = slugger.wrap(Model);
