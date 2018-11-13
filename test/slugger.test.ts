@@ -122,26 +122,31 @@ describe('slugger', () => {
       expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/the index 'name_index' does not contain the slug path 'slug'./);
     });
 
+    it('throws error when `slugPath` is not of type `String`', () => {
+      const schema = new mongoose.Schema({ slug: Number });
+      expect(() => schema.plugin(slugger.plugin, { slugPath: 'slug' })).to.throwError(/the slug path 'slug' is not of type String./);
+    });
+
   });
 
   describe('default generator', () => {
 
     let doc: IMyDocument;
 
-    beforeEach(() => {
-      doc = new Model({ firstname: 'john', lastname: 'doe' });
-    });
-
     describe('single property', () => {
 
       const generator = utils.createDefaultGenerator('firstname');
 
+      beforeEach(() => {
+        doc = new Model({ firstname: 'john' });
+      });
+
       it('generates slug for sequence 0', () => {
-        expect(generator(doc, 0)).to.eql('john');
+        expect(generator(doc, 0, Number.MAX_VALUE)).to.eql('john');
       });
 
       it('generates slug for sequence 1', () => {
-        expect(generator(doc, 1)).to.eql('john-2');
+        expect(generator(doc, 1, Number.MAX_VALUE)).to.eql('john-2');
       });
 
     });
@@ -150,12 +155,38 @@ describe('slugger', () => {
 
       const generator = utils.createDefaultGenerator([ 'firstname', 'lastname' ]);
 
+      beforeEach(() => {
+        doc = new Model({ firstname: 'john', lastname: 'doe' });
+      });
+
       it('generates slug', () => {
-        expect(generator(doc, 1)).to.eql('john-doe-2');
+        expect(generator(doc, 1, Number.MAX_VALUE)).to.eql('john-doe-2');
       });
 
       it('ignores missing values', () => {
-        expect(generator(new Model({ firstname: 'john' }), 1)).to.eql('john-2');
+        expect(generator(new Model({ firstname: 'john' }), 1, Number.MAX_VALUE)).to.eql('john-2');
+      });
+
+    });
+
+    describe('with `maxlength` parameter', () => {
+
+      const generator = utils.createDefaultGenerator([ 'firstname', 'lastname' ]);
+
+      beforeEach(() => {
+        doc = new Model({ firstname: 'Johannes Chrysostomus Wolfgangus Theophilus', lastname: 'Mozart' });
+      });
+
+      it('generates full length slug when no constraint is given', () => {
+        expect(generator(doc, 0, Number.MAX_SAFE_INTEGER)).to.eql('johannes-chrysostomus-wolfgangus-theophilus-mozart');
+      });
+
+      it('shortens slug to given `maxlength` for sequence 0', () => {
+        expect(generator(doc, 0, 25)).to.eql('johannes-chrysostomus-wol');
+      });
+
+      it('shortens slug to given `maxlength` for sequence 1', () => {
+        expect(generator(doc, 1, 25)).to.eql('johannes-chrysostomus-w-2');
       });
 
     });
@@ -340,6 +371,38 @@ describe('slugger', () => {
           expect(e).to.be.a(slugger.SluggerError);
           expect(e.message).to.eql('Already attempted slug \'john\' before. Giving up.');
         }
+      });
+
+    });
+
+    describe('generating slugs with `maxlength`', () => {
+      let Model3: mongoose.Model<IMyDocument>;
+
+      before(() => {
+        const schema3 = new mongoose.Schema({
+          firstname: String,
+          slug: { type: String, maxlength: 25 }
+        });
+
+        schema3.index({ slug: 1 }, { name: 'slug', unique: true });
+
+        const sluggerOptions3 = new slugger.SluggerOptions<IMyDocument>({
+          slugPath: 'slug',
+          generateFrom: 'firstname',
+          index: 'slug'
+        });
+
+        schema3.plugin(slugger.plugin, sluggerOptions3);
+
+        Model3 = mongoose.model<IMyDocument>('SlugModel3', schema3);
+        Model3 = slugger.wrap(Model3);
+
+      });
+
+      it('shortens slugs to `maxlength`', async () => {
+        const doc = await Model3.create({ firstname: 'Johannes Chrysostomus Wolfgangus Theophilus', lastname: 'Mozart' });
+        expect(doc.slug).to.have.length(25);
+        expect(doc.slug).to.eql('johannes-chrysostomus-wol');
       });
 
     });

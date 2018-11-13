@@ -12,9 +12,14 @@ export interface GeneratorFunction<D extends Document> {
    *
    * @param doc The document.
    * @param attempt Number of attempt, starting with zero.
+   * @param maxlength The maximum length of the slug to generate.
+   *                  Returning a string which is longer than this
+   *                  value will produce an error. Keep in mind,
+   *                  that you should not trim away the attempt
+   *                  count, when you need to shorten your slug.
    * @returns A new slug, such as 'john-doe'.
    */
-  (doc: D, attempt: number): string;
+  (doc: D, attempt: number, maxlength: number): string;
 }
 
 /**
@@ -135,9 +140,23 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
     throw new Error('slugger was added more than once.');
   }
 
+  const slugSchemaType = schema.path(options.slugPath) as any;
+
   // make sure, that the `slugPath` exists
-  if (!schema.path(options.slugPath)) {
+  if (!slugSchemaType) {
     throw new Error(`the slug path '${options.slugPath}' does not exist in the schema.`);
+  }
+
+  // check if there is a maxlength constraint for the `slugPath`
+  // (looks as this is non-public API, at least it's not in the typings)
+  let maxlength = Number.MAX_SAFE_INTEGER;
+  if (slugSchemaType.options && typeof slugSchemaType.options.maxlength === 'number') {
+    maxlength = slugSchemaType.options.maxlength;
+  }
+
+  // make sure, that `slugPath` is of type `String`
+  if (!(slugSchemaType instanceof Schema.Types.String)) {
+    throw new Error(`the slug path '${options.slugPath}' is not of type String.`);
   }
 
   // make sure the specified index exists
@@ -163,7 +182,11 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
       this[utils.attachmentPropertyName] = slugAttachment;
     }
     if (slugAttachment) {
-      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length));
+      const slug = options.generator(this, slugAttachment.slugAttempts.length, maxlength);
+      if (slug.length > maxlength) {
+        throw new Error(`the generated slug was longer than allowed (${slug.length} > ${maxlength})`);
+      }
+      this.set(options.slugPath, slug);
     }
     next();
   });

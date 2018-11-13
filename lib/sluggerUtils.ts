@@ -49,12 +49,11 @@ export async function saveSlugWithRetries<D extends Document> (document: D, slug
 }
 
 export function createDefaultGenerator (paths: string | string[]): slugger.GeneratorFunction<Document> {
-  return (doc, attempt) => {
+  return (doc, attempt, maxlength) => {
     const values = ([] as string[]).concat(paths).map(path => doc.get(path));
-    if (attempt > 0) {
-      values.push(attempt + 1);
-    }
-    return limax(values.join('-'));
+    const slug: string = limax(values.join('-'));
+    const suffix = attempt > 0 ? `-${attempt + 1}` : '';
+    return slug.substring(0, maxlength - suffix.length) + suffix;
   };
 }
 
