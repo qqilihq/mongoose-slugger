@@ -88,6 +88,7 @@ For the best development experience, make sure that your editor supports [TSLint
 Commit all changes and run the following:
 
 ```shell
+$ ./test.sh
 $ npm login
 $ npm version <update_type>
 $ npm publish

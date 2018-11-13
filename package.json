@@ -25,7 +25,8 @@
     "lint": "tslint -p tsconfig.json 'lib/**/*.ts' 'test/**/*.ts'",
     "build": "tsc -p tsconfig.build.json",
     "test:coverage": "nyc mocha",
-    "clean": "rimraf ./.nyc_output ./coverage ./dist"
+    "clean": "rimraf ./.nyc_output ./coverage ./dist",
+    "preversion": "run-s clean lint build"
   },
   "dependencies": {
     "limax": "^1.6.0"
@@ -38,6 +39,7 @@
     "mocha": "^5.0.5",
     "mocha-junit-reporter": "^1.17.0",
     "mongoose": "^5.0.0",
+    "npm-run-all": "^4.1.3",
     "nyc": "^11.6.0",
     "rimraf": "^2.6.2",
     "ts-node": "^5.0.1",
