@@ -149,7 +149,7 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
   if (!index[1].unique) {
     throw new Error(`the index '${options.index}' is not unique.`);
   }
-  // make sure, that the `slugPath` in contained in the index
+  // make sure, that the `slugPath` is contained in the index
   if (!index[0].hasOwnProperty(options.slugPath)) {
     throw new Error(`the index '${options.index}' does not contain the slug path '${options.slugPath}'.`);
   }
