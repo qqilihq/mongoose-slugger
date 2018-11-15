@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "test": "nyc mocha",
-    "pretest": "MONGODB_VERSION=3.4.6 mongodb-runner start",
+    "pretest": "MONGODB_VERSION=3.4.6 MONGODB_PORT=27018 mongodb-runner start",
     "posttest": "mongodb-runner stop",
     "lint": "tslint -p tsconfig.json 'lib/**/*.ts' 'test/**/*.ts'",
     "build": "tsc -p tsconfig.build.json",
