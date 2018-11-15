@@ -67,6 +67,13 @@ export interface SluggerInitOptions<D extends Document> {
    * forever.
    */
   maxAttempts?: number;
+
+  /**
+   * Specify a maximum length for the generated slugs. In case this
+   * options is set, it will override the Mongoose schema’s
+   * `maxlength` property.
+   */
+  maxLength?: number;
 }
 
 export class SluggerOptions<D extends Document> {
@@ -74,6 +81,7 @@ export class SluggerOptions<D extends Document> {
   readonly generator: GeneratorFunction<D>;
   readonly index: string;
   readonly maxAttempts?: number;
+  readonly maxLength?: number;
   constructor (init: SluggerInitOptions<D>) {
     if (!init) {
       throw new Error('config is missing.');
@@ -86,6 +94,9 @@ export class SluggerOptions<D extends Document> {
     }
     if (typeof init.maxAttempts === 'number' && init.maxAttempts < 1) {
       throw new Error('`maxAttempts` must be at least one.');
+    }
+    if (typeof init.maxLength === 'number' && init.maxLength < 1) {
+      throw new Error('`maxLength` must be at least one.');
     }
 
     this.index = init.index;
@@ -103,6 +114,7 @@ export class SluggerOptions<D extends Document> {
     }
 
     this.maxAttempts = init.maxAttempts;
+    this.maxLength = init.maxLength;
   }
 }
 
@@ -147,10 +159,13 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
     throw new Error(`the slug path '${options.slugPath}' does not exist in the schema.`);
   }
 
-  // check if there is a maxlength constraint for the `slugPath`
+  // check if either (a) the `maxLength` property has been set, or
+  // (b) there is a maxlength constraint for the `slugPath`
   // (looks as this is non-public API, at least it's not in the typings)
   let maxlength = Number.MAX_SAFE_INTEGER;
-  if (slugSchemaType.options && typeof slugSchemaType.options.maxlength === 'number') {
+  if (typeof options.maxLength === 'number') {
+    maxlength = options.maxLength;
+  } else if (slugSchemaType.options && typeof slugSchemaType.options.maxlength === 'number') {
     maxlength = slugSchemaType.options.maxlength;
   }
 

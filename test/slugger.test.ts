@@ -127,6 +127,10 @@ describe('slugger', () => {
       expect(() => schema.plugin(slugger.plugin, { slugPath: 'slug' })).to.throwError(/the slug path 'slug' is not of type String./);
     });
 
+    it('throws error when `maxLength` is less than one', () => {
+      expect(() => new slugger.SluggerOptions({ generateFrom: 'name', index: 'name', maxLength: 0 })).to.throwError(/`maxLength` must be at least one./);
+    });
+
   });
 
   describe('default generator', () => {
@@ -375,7 +379,7 @@ describe('slugger', () => {
 
     });
 
-    describe('generating slugs with `maxlength`', () => {
+    describe('generating slugs with `maxlength` on schema', () => {
       let Model3: mongoose.Model<IMyDocument>;
 
       before(() => {
@@ -401,6 +405,39 @@ describe('slugger', () => {
 
       it('shortens slugs to `maxlength`', async () => {
         const doc = await Model3.create({ firstname: 'Johannes Chrysostomus Wolfgangus Theophilus', lastname: 'Mozart' });
+        expect(doc.slug).to.have.length(25);
+        expect(doc.slug).to.eql('johannes-chrysostomus-wol');
+      });
+
+    });
+
+    describe('generate slugs with `maxLength` on options', () => {
+      let Model4: mongoose.Model<IMyDocument>;
+
+      before(() => {
+        const schema4 = new mongoose.Schema({
+          firstname: String,
+          slug: { type: String, maxlength: 50 }
+        });
+
+        schema4.index({ slug: 1 }, { name: 'slug', unique: true });
+
+        const sluggerOptions4 = new slugger.SluggerOptions<IMyDocument>({
+          slugPath: 'slug',
+          generateFrom: 'firstname',
+          index: 'slug',
+          maxLength: 25
+        });
+
+        schema4.plugin(slugger.plugin, sluggerOptions4);
+
+        Model4 = mongoose.model<IMyDocument>('SlugModel4', schema4);
+        Model4 = slugger.wrap(Model4);
+
+      });
+
+      it('shortens slugs to `maxlength`', async () => {
+        const doc = await Model4.create({ firstname: 'Johannes Chrysostomus Wolfgangus Theophilus', lastname: 'Mozart' });
         expect(doc.slug).to.have.length(25);
         expect(doc.slug).to.eql('johannes-chrysostomus-wol');
       });
