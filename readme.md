@@ -79,7 +79,7 @@ Model = slugger.wrap(Model);
 
 Install NPM dependencies with `yarn`.
 
-To execute the tests, use the `test.sh` script. It starts a new MongoDB Docker container and then executes the test cases. The test coverage report can be found in `coverage/index.html`.
+To execute the tests, run the `test` task. It starts a new MongoDB instance using [mongodb-runner](https://github.com/mongodb-js/runner) and then executes the test cases. The test coverage report can be found in `coverage/index.html`.
 
 For the best development experience, make sure that your editor supports [TSLint](https://palantir.github.io/tslint/usage/third-party-tools/) and [EditorConfig](http://editorconfig.org).
 
@@ -88,7 +88,6 @@ For the best development experience, make sure that your editor supports [TSLint
 Commit all changes and run the following:
 
 ```shell
-$ ./test.sh
 $ npm login
 $ npm version <update_type>
 $ npm publish
