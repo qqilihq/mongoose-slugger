@@ -1,4 +1,4 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import * as slugger from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
 const limax = require('limax');
@@ -263,7 +263,7 @@ describe('slugger', () => {
     describe('callbacks', () => {
 
       it('does not return promises when using callbacks', (done) => {
-        const result = new Model({}).save((err, product) => done(err));
+        const result = new Model({}).save((err, _product) => done(err));
         expect(result).toBeUndefined();
       });
 
@@ -278,7 +278,7 @@ describe('slugger', () => {
 
       it('generates another slug in case of a conflict', (done) => {
         // tslint:disable-next-line:no-floating-promises
-        new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' }).save((err, product) => {
+        new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' }).save((err, _product) => {
           if (err) return done(err);
           // tslint:disable-next-line:no-floating-promises
           new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john2@example.com' }).save((err, product) => {
@@ -292,10 +292,10 @@ describe('slugger', () => {
 
       it('propagates error which is caused by duplicate on different index', (done) => {
         // tslint:disable-next-line:no-floating-promises
-        new Model({ firstname: 'john', lastname: 'doe', email: 'john@example.com' }).save((err, product) => {
+        new Model({ firstname: 'john', lastname: 'doe', email: 'john@example.com' }).save((err, _product) => {
           if (err) return done(err);
           // tslint:disable-next-line:no-floating-promises
-          new Model({ firstname: 'john', lastname: 'dope', email: 'john@example.com' }).save((err, product) => {
+          new Model({ firstname: 'john', lastname: 'dope', email: 'john@example.com' }).save((err, _product) => {
             expect(err).toBeInstanceOf(Object);
             expect(err.code).toEqual(11000);
             done();
@@ -320,7 +320,7 @@ describe('slugger', () => {
 
         sluggerOptions2 = new slugger.SluggerOptions<IMyDocument>({
           slugPath: 'slug',
-          generateFrom: (doc, attempt) => doc.firstname,
+          generateFrom: (doc, _attempt) => doc.firstname,
           index: 'slug'
         });
 
