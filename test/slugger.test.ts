@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import * as slugger from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
-const limax = require('limax');
+import limax from 'limax';
 
 interface IMyDocument extends mongoose.Document {
   firstname: string;

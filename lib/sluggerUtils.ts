@@ -1,7 +1,7 @@
 import { Document, Schema, SaveOptions } from 'mongoose';
 import { MongoError } from 'mongodb';
 import * as slugger from './slugger';
-const limax = require('limax');
+import limax from 'limax';
 
 // internal utilities which are not meant to belong to the API
 

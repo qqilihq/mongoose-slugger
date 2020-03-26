@@ -28,7 +28,7 @@
     "preversion": "run-s clean lint test build"
   },
   "dependencies": {
-    "limax": "^1.6.0"
+    "limax": "^2.0.0"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^1.1.5",
