@@ -31,6 +31,7 @@
     "limax": "^2.0.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
     "@shelf/jest-mongodb": "^1.1.5",
     "@types/jest": "^25.1.4",
     "@types/mongoose": "^5.0.9",
@@ -40,6 +41,7 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.2",
+    "husky": "^4.2.3",
     "jest": "^25.2.1",
     "jest-junit": "^10.0.0",
     "mongoose": "^5.0.0",
