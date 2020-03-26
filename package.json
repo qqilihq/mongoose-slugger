@@ -34,6 +34,7 @@
     "@shelf/jest-mongodb": "^1.1.5",
     "@types/jest": "^25.1.4",
     "@types/mongoose": "^5.0.9",
+    "@types/node": "^10.17.17",
     "jest": "^25.2.1",
     "jest-junit": "^10.0.0",
     "mongoose": "^5.0.0",
@@ -43,7 +44,7 @@
     "ts-node": "^5.0.1",
     "tslint": "^5.9.1",
     "tslint-config-standard": "^7.0.0",
-    "typescript": "^2.8.1"
+    "typescript": "^3.8.3"
   },
   "peerDependencies": {
     "mongoose": "^5.0.0"
