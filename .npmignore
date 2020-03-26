@@ -5,6 +5,7 @@ test/
 
 .editorconfig
 .gitignore
+junit.xml
 shippable.yml
 test.sh
 tsconfig.*
