@@ -19,9 +19,7 @@ env:
   global:
     - TEST_RESULTS_DIR=$SHIPPABLE_REPO_DIR/shippable/testresults
     - CODE_COVERAGE_DIR=$SHIPPABLE_REPO_DIR/shippable/codecoverage
-    - MOD_LOC=$SHIPPABLE_REPO_DIR/node_modules/.bin/
-  matrix:
-    - MONGODB_VERSION=3.4.6
+    # - MOD_LOC=$SHIPPABLE_REPO_DIR/node_modules/.bin/
 
 build:
 
@@ -38,8 +36,8 @@ build:
     # run integration tests (require the running MongDB)
     # and keep test and coverage results
     - mkdir -p $TEST_RESULTS_DIR && mkdir -p $CODE_COVERAGE_DIR
-    - yarn run pretest
-    - $MOD_LOC/nyc --reporter=cobertura --report-dir=$CODE_COVERAGE_DIR mocha -R mocha-junit-reporter --reporter-options mochaFile=$TEST_RESULTS_DIR/testresults.xml
-    - yarn run posttest
+    - yarn run test
+    # TODO re-add this
+    # - $MOD_LOC/nyc --reporter=cobertura --report-dir=$CODE_COVERAGE_DIR mocha -R mocha-junit-reporter --reporter-options mochaFile=$TEST_RESULTS_DIR/testresults.xml
 
     - yarn run build

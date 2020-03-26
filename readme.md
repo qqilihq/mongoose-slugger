@@ -79,7 +79,7 @@ Model = slugger.wrap(Model);
 
 Install NPM dependencies with `yarn`.
 
-To execute the tests, run the `test` task. It starts a new MongoDB instance using [mongodb-runner](https://github.com/mongodb-js/runner) and then executes the test cases. The test coverage report can be found in `coverage/index.html`.
+To execute the tests, run the `test` task. It starts a new MongoDB instance using [@shelf/jest-mongodb](https://github.com/shelfio/jest-mongodb) and then executes the test cases. The test coverage report can be found in `coverage/index.html`.
 
 For the best development experience, make sure that your editor supports [TSLint](https://palantir.github.io/tslint/usage/third-party-tools/) and [EditorConfig](http://editorconfig.org).
 
@@ -117,4 +117,4 @@ Pull requests are very welcome. Feel free to discuss bugs or new features by ope
 
 - - -
 
-Copyright Philipp Katz, [LineUpr GmbH](http://lineupr.com), 2018
+Copyright Philipp Katz, [LineUpr GmbH](http://lineupr.com), 2018 – 2020

@@ -1,4 +1,3 @@
-import expect = require('expect.js');
 import * as mongoose from 'mongoose';
 import * as slugger from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
@@ -18,7 +17,7 @@ describe('slugger', () => {
   let Model: mongoose.Model<IMyDocument>;
   let sluggerOptions: slugger.SluggerOptions<IMyDocument>;
 
-  before(() => {
+  beforeAll(() => {
 
     const schema = new mongoose.Schema({
       firstname: String,
@@ -61,26 +60,27 @@ describe('slugger', () => {
 
     it('throws when creating config with missing object', () => {
       // @ts-ignore
-      expect(() => new slugger.SluggerOptions()).to.throwError(/config is missing./);
+      expect(() => new slugger.SluggerOptions()).toThrowError(/config is missing./);
     });
 
     it('throws error when configuration is missing', () => {
-      expect(slugger.plugin).withArgs().to.throwError(/options are missing./);
+      // @ts-ignore
+      expect(() => slugger.plugin()).toThrowError(/options are missing./);
     });
 
     it('throws error when neither `generateFrom` is given', () => {
-      expect(() => new slugger.SluggerOptions({ index: 'slug' } as any)).to.throwError(/`generateFrom` is missing./);
+      expect(() => new slugger.SluggerOptions({ index: 'slug' } as any)).toThrowError(/`generateFrom` is missing./);
     });
 
     it('throws error when index is missing', () => {
       // @ts-ignore
-      expect(() => new slugger.SluggerOptions({})).to.throwError(/`index` is missing./);
+      expect(() => new slugger.SluggerOptions({})).toThrowError(/`index` is missing./);
     });
 
     it('throws error when specified index does not exist', () => {
       const schema = new mongoose.Schema({ name: String, slug: String });
       const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'does_not_exist' });
-      expect(slugger.plugin).withArgs(schema, sluggerOptions).to.throwError(/schema contains no index with name 'does_not_exist'./);
+      expect(() => slugger.plugin(schema, sluggerOptions)).toThrowError(/schema contains no index with name 'does_not_exist'./);
     });
 
     it('throws error when applied more than once on a single schema', () => {
@@ -88,38 +88,38 @@ describe('slugger', () => {
       schema.index({ slug: 1 }, { name: 'slug', unique: true });
       const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'slug' });
       schema.plugin(slugger.plugin, sluggerOptions);
-      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/slugger was added more than once./);
+      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(/slugger was added more than once./);
     });
 
     it('throws error when index is not unique', () => {
       const schema = new mongoose.Schema({ name: String, slug: String });
       schema.index({ name: 1 }, { name: 'name' });
       const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({ generateFrom: 'name', index: 'name' });
-      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/the index 'name' is not unique./);
+      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(/the index 'name' is not unique./);
 
     });
 
     it('throws error when calling `wrap` on a model without plugin', () => {
       const schema = new mongoose.Schema({ name: String });
       const model = mongoose.model('TestModel', schema);
-      expect(() => slugger.wrap(model)).to.throwError(/slugger was not added./);
+      expect(() => slugger.wrap(model)).toThrowError(/slugger was not added./);
     });
 
     it('throws error when `maxAttempts` is less than one', () => {
-      expect(() => new slugger.SluggerOptions({ generateFrom: 'name', index: 'name', maxAttempts: 0 })).to.throwError(/`maxAttempts` must be at least one./);
+      expect(() => new slugger.SluggerOptions({ generateFrom: 'name', index: 'name', maxAttempts: 0 })).toThrowError(/`maxAttempts` must be at least one./);
     });
 
     it('throws error when `slugPath` is missing in the schema', () => {
       const schema = new mongoose.Schema({ name: String });
       const sluggerOptions = new slugger.SluggerOptions({ generateFrom: 'name', index: 'name', slugPath: 'does_not_exist' });
-      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/the slug path 'does_not_exist' does not exist in the schema./);
+      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(/the slug path 'does_not_exist' does not exist in the schema./);
     });
 
     it('throws error when `index` does not contain `slugPath`', () => {
       const schema = new mongoose.Schema({ name: String, slug: String });
       schema.index({ name: 1 }, { name: 'name_index', unique: true });
       const sluggerOptions = new slugger.SluggerOptions({ generateFrom: 'name', index: 'name_index', slugPath: 'slug' });
-      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).to.throwError(/the index 'name_index' does not contain the slug path 'slug'./);
+      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(/the index 'name_index' does not contain the slug path 'slug'./);
     });
 
   });
@@ -137,11 +137,11 @@ describe('slugger', () => {
       const generator = utils.createDefaultGenerator('firstname');
 
       it('generates slug for sequence 0', () => {
-        expect(generator(doc, 0)).to.eql('john');
+        expect(generator(doc, 0)).toEqual('john');
       });
 
       it('generates slug for sequence 1', () => {
-        expect(generator(doc, 1)).to.eql('john-2');
+        expect(generator(doc, 1)).toEqual('john-2');
       });
 
     });
@@ -151,11 +151,11 @@ describe('slugger', () => {
       const generator = utils.createDefaultGenerator([ 'firstname', 'lastname' ]);
 
       it('generates slug', () => {
-        expect(generator(doc, 1)).to.eql('john-doe-2');
+        expect(generator(doc, 1)).toEqual('john-doe-2');
       });
 
       it('ignores missing values', () => {
-        expect(generator(new Model({ firstname: 'john' }), 1)).to.eql('john-2');
+        expect(generator(new Model({ firstname: 'john' }), 1)).toEqual('john-2');
       });
 
     });
@@ -167,37 +167,37 @@ describe('slugger', () => {
     it('generates slug on validate', async () => {
       const doc = new Model({ firstname: 'john', lastname: 'doe' });
       await doc.validate();
-      expect(doc.slug).to.eql('john-doe');
+      expect(doc.slug).toEqual('john-doe');
     });
 
   });
 
   describe('saving to database', function () {
 
-    this.timeout(10 * 1000);
-    this.slow(1000);
+    jest.setTimeout(10 * 1000);
+    // this.slow(1000);
 
     // mongoose.set('debug', true);
 
-    before(() => mongoose.connect('mongodb://localhost:27017/slugger-test', {
+    beforeAll(() => mongoose.connect(process.env.MONGO_URL as string, {
       connectTimeoutMS: 30 * 1000 /* 30 seconds */
     }));
     beforeEach(() => Promise.all(mongoose.modelNames().map(modelName => mongoose.model(modelName).remove({}).exec())));
-    after(() => mongoose.connection.close());
+    afterAll(() => mongoose.connection.close());
 
     describe('using helper function', () => {
 
       it('generates another slug in case of a conflict', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' });
         const doc2 = await utils.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john2@example.com' }), sluggerOptions);
-        expect(doc2.slug).to.eql('john-doe-2');
+        expect(doc2.slug).toEqual('john-doe-2');
       });
 
       it('generates slug sequence', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' }); // slug = john-doe
         for (let n = 2; n <= 10; n++) {
           const doc = await utils.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: `john${n}@example.com` }), sluggerOptions);
-          expect(doc.slug).to.eql(`john-doe-${n}`);
+          expect(doc.slug).toEqual(`john-doe-${n}`);
         }
       });
 
@@ -207,10 +207,10 @@ describe('slugger', () => {
         }
         try {
           await utils.saveSlugWithRetries(new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: `john@example.com` }), sluggerOptions);
-          expect().fail();
+          fail();
         } catch (e) {
-          expect(e).to.be.a(slugger.SluggerError);
-          expect(e.message).to.eql('Reached 10 attempts without being able to insert. Giving up.');
+          expect(e).toBeInstanceOf(slugger.SluggerError);
+          expect(e.message).toEqual('Reached 10 attempts without being able to insert. Giving up.');
         }
       });
 
@@ -220,28 +220,28 @@ describe('slugger', () => {
 
       it('generates slug', async () => {
         const doc = await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' });
-        expect(doc.slug).to.eql('john-doe');
+        expect(doc.slug).toEqual('john-doe');
       });
 
       it('generates another slug in case of a conflict', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john@example.com' });
         const doc2 = await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john2@example.com' });
-        expect(doc2.slug).to.eql('john-doe-2');
+        expect(doc2.slug).toEqual('john-doe-2');
       });
 
       it('generates no slug when explicity specified', async () => {
         const doc = await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', slug: 'john' });
-        expect(doc.slug).to.eql('john');
+        expect(doc.slug).toEqual('john');
       });
 
       it('does not retry when explicitly specified and conflicts', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john.doe@example.com', slug: 'john' });
         try {
           await Model.create({ firstname: 'john', lastname: 'dope', city: 'memphis', country: 'usa', email: 'john.dope@example.com', slug: 'john' });
-          expect().fail();
+          fail();
         } catch (e) {
-          expect(e).to.be.an('object');
-          expect(e.code).to.eql(11000);
+          expect(e).toBeInstanceOf(Object);
+          expect(e.code).toEqual(11000);
         }
       });
 
@@ -249,14 +249,14 @@ describe('slugger', () => {
         await Model.create({ firstname: 'john', lastname: 'doe', email: 'john@example.com' });
         try {
           await Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' });
-          expect().fail();
+          fail();
         } catch (e) {
-          expect(e).to.be.an('object');
-          expect(e.code).to.eql(11000);
+          expect(e).toBeInstanceOf(Object);
+          expect(e.code).toEqual(11000);
         }
       });
 
-      it('correctly propagates error which is not caused by duplicate keys');
+      it.todo('correctly propagates error which is not caused by duplicate keys');
 
     });
 
@@ -264,14 +264,14 @@ describe('slugger', () => {
 
       it('does not return promises when using callbacks', (done) => {
         const result = new Model({}).save((err, product) => done(err));
-        expect(result).to.be(undefined);
+        expect(result).toBeUndefined();
       });
 
       it('generates slug', (done) => {
         // tslint:disable-next-line:no-floating-promises
         new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' }).save((err, product) => {
-          expect(err).to.be(undefined);
-          expect(product).to.be.an('object');
+          expect(err).toBeUndefined();
+          expect(product).toBeInstanceOf(Object);
           done();
         });
       });
@@ -283,8 +283,8 @@ describe('slugger', () => {
           // tslint:disable-next-line:no-floating-promises
           new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa', email: 'john2@example.com' }).save((err, product) => {
             if (err) return done(err);
-            expect(err).to.be(undefined);
-            expect(product.slug).to.eql('john-doe-2');
+            expect(err).toBeUndefined();
+            expect(product.slug).toEqual('john-doe-2');
             done();
           });
         });
@@ -296,8 +296,8 @@ describe('slugger', () => {
           if (err) return done(err);
           // tslint:disable-next-line:no-floating-promises
           new Model({ firstname: 'john', lastname: 'dope', email: 'john@example.com' }).save((err, product) => {
-            expect(err).to.be.an('object');
-            expect(err.code).to.eql(11000);
+            expect(err).toBeInstanceOf(Object);
+            expect(err.code).toEqual(11000);
             done();
           });
         });
@@ -309,7 +309,7 @@ describe('slugger', () => {
       let Model2: mongoose.Model<IMyDocument>;
       let sluggerOptions2: slugger.SluggerOptions<IMyDocument>;
 
-      before(() => {
+      beforeAll(() => {
 
         const schema2 = new mongoose.Schema({
           firstname: String,
@@ -335,10 +335,10 @@ describe('slugger', () => {
         await Model2.create({ firstname: 'john' });
         try {
           await Model2.create({ firstname: 'john' });
-          expect().fail();
+          fail();
         } catch (e) {
-          expect(e).to.be.a(slugger.SluggerError);
-          expect(e.message).to.eql('Already attempted slug \'john\' before. Giving up.');
+          expect(e).toBeInstanceOf(slugger.SluggerError);
+          expect(e.message).toEqual('Already attempted slug \'john\' before. Giving up.');
         }
       });
 
@@ -350,11 +350,11 @@ describe('slugger', () => {
 
     it('extracts index name from error message', () => {
       const message = 'E11000 duplicate key error collection: slugger-test.slugmodels index: city_country_slug dup key: { : "memphis", : "usa", : "john-doe" }';
-      expect(utils.extractIndexNameFromError(message)).to.eql('city_country_slug');
+      expect(utils.extractIndexNameFromError(message)).toEqual('city_country_slug');
     });
 
     it('returns `undefined` in case of no match', () => {
-      expect(utils.extractIndexNameFromError('foo')).to.be(undefined);
+      expect(utils.extractIndexNameFromError('foo')).toBeUndefined();
     });
 
   });
