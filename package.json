@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "test": "jest",
-    "lint": "eslint --ext .ts ./lib/** ./test/**",
+    "lint": "eslint --ext .ts ./lib ./test",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf ./coverage ./dist",
     "preversion": "run-s clean lint test build"
