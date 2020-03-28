@@ -191,10 +191,14 @@ describe('slugger', () => {
 
     beforeAll(() =>
       mongoose.connect(process.env.MONGO_URL as string, {
-        connectTimeoutMS: 30 * 1000 /* 30 seconds */
+        connectTimeoutMS: 30 * 1000 /* 30 seconds */,
+        useNewUrlParser: true,
+        useCreateIndex: true
       })
     );
-    beforeEach(() => Promise.all(mongoose.modelNames().map(modelName => mongoose.model(modelName).remove({}).exec())));
+    beforeEach(() =>
+      Promise.all(mongoose.modelNames().map(modelName => mongoose.model(modelName).deleteMany({}).exec()))
+    );
     afterAll(() => mongoose.connection.close());
 
     describe('using helper function', () => {
