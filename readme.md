@@ -34,6 +34,8 @@ There exist several similar Mongoose plugins already, however, none of them fit 
 
 2. In the very worst case, this will perform a very high amount of attempts to insert. This is by design, as we assume that potential conflicts are relatively rare and, if they happen, can be circumvented by an acceptable amount of retries.
 
+3. Only works with MongoDB’s (default) “WiredTiger” storage engine. This is due to the fact that other engines product differently structured error types which do not contain the necessary index information.
+
 ## Installation
 
 ```shell

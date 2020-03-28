@@ -191,6 +191,9 @@ export function wrap<D extends Document>(model: Model<D>): Model<D> {
 
   model.prototype[utils.delegatedSaveFunction] = model.prototype.save;
 
+  // only check the storage engine *once* on first call
+  let hasCheckedStorageEngine = false;
+
   // @ts-ignore -- ignore “TS7030: Not all code paths return a value.”
   // this is fine, as we’re following Mongoose’s API here
   model.prototype.save = function (saveOptions: any, fn: any) {
@@ -199,7 +202,14 @@ export function wrap<D extends Document>(model: Model<D>): Model<D> {
       saveOptions = undefined;
     }
 
-    const promise = utils.saveSlugWithRetries(this, sluggerOptions, saveOptions);
+    let promise: Promise<any> = Promise.resolve();
+
+    if (!hasCheckedStorageEngine) {
+      promise = promise.then(() => utils.checkStorageEngine(model.db.db));
+      hasCheckedStorageEngine = true;
+    }
+
+    promise = promise.then(() => utils.saveSlugWithRetries(this, sluggerOptions, saveOptions));
 
     if (!fn) {
       return promise;

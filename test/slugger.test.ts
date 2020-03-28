@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import * as slugger from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
 import limax from 'limax';
+import fs from 'fs';
+import path from 'path';
 
 interface MyDocument extends mongoose.Document {
   firstname: string;
@@ -448,5 +450,23 @@ describe('slugger', () => {
     it('returns `undefined` in case of no match', () => {
       expect(utils.extractIndexNameFromError('foo')).toBeUndefined();
     });
+
+    describe('checking storage engine', () => {
+      it('throws error with `ephemeralForTest`', async () => {
+        const status = await readJson(path.join(__dirname, '__data/status_ephemeralForTest.json'));
+        expect(() => utils.checkStorageEngineStatus(status)).toThrowError(
+          "Storage Engine is set to 'ephemeralForTest', but only 'wiredTiger' is supported at the moment."
+        );
+      });
+      it('throws no error with `wiredTiger`', async () => {
+        const status = await readJson(path.join(__dirname, '__data/status_wiredTiger.json'));
+        expect(() => utils.checkStorageEngineStatus(status)).not.toThrowError();
+      });
+    });
   });
 });
+
+async function readJson(path: string): Promise<any> {
+  const jsonString = await fs.promises.readFile(path, 'utf8');
+  return JSON.parse(jsonString);
+}

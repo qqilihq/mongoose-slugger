@@ -2,6 +2,7 @@ import { Document, Schema, SaveOptions } from 'mongoose';
 import { MongoError } from 'mongodb';
 import * as slugger from './slugger';
 import limax from 'limax';
+import * as mongodb from 'mongodb';
 
 // internal utilities which are not meant to belong to the API
 
@@ -78,4 +79,19 @@ export function getSluggerPlugins(schema: Schema): any[] {
 
 function isMongoError(e: any): e is MongoError {
   return ['MongoError', 'BulkWriteError'].includes(e.name);
+}
+
+export async function checkStorageEngine(db: mongodb.Db): Promise<void> {
+  checkStorageEngineStatus(await db.admin().serverStatus());
+}
+
+export function checkStorageEngineStatus(status: any) {
+  if (!status.storageEngine || !status.storageEngine.name) {
+    throw new Error('status.storageEngine is missing');
+  }
+  if (status.storageEngine.name !== 'wiredTiger') {
+    throw new Error(
+      `Storage Engine is set to '${status.storageEngine.name}', but only 'wiredTiger' is supported at the moment.`
+    );
+  }
 }
