@@ -5,13 +5,13 @@
 language: node_js
 
 node_js:
-  - 8.9.4
+  - 10.19.0
 
 # use this to control what branches get built.
 # http://docs.shippable.com/ci/advancedOptions/branches/
-branches:
-  only:
-    - master
+# branches:
+#   only:
+#     - master
 
 # using pre-defined build variables
 # full list http://docs.shippable.com/ci/advancedOptions/environmentVariables/
@@ -20,8 +20,6 @@ env:
     - TEST_RESULTS_DIR=$SHIPPABLE_REPO_DIR/shippable/testresults
     - CODE_COVERAGE_DIR=$SHIPPABLE_REPO_DIR/shippable/codecoverage
     - MOD_LOC=$SHIPPABLE_REPO_DIR/node_modules/.bin/
-  matrix:
-    - MONGODB_VERSION=3.4.6
 
 build:
 
@@ -38,8 +36,9 @@ build:
     # run integration tests (require the running MongDB)
     # and keep test and coverage results
     - mkdir -p $TEST_RESULTS_DIR && mkdir -p $CODE_COVERAGE_DIR
-    - yarn run pretest
-    - $MOD_LOC/nyc --reporter=cobertura --report-dir=$CODE_COVERAGE_DIR mocha -R mocha-junit-reporter --reporter-options mochaFile=$TEST_RESULTS_DIR/testresults.xml
-    - yarn run posttest
+    - yarn run test
+    # https://stackoverflow.com/a/52357797/388827
+    - $MOD_LOC/jest --ci --reporters=jest-junit --reporters=default --coverage --coverageReporters=cobertura --coverageReporters=html
+    - cp ./junit.xml $TEST_RESULTS_DIR && cp -r ./coverage/* $CODE_COVERAGE_DIR
 
     - yarn run build

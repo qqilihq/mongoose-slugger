@@ -34,6 +34,8 @@ There exist several similar Mongoose plugins already, however, none of them fit 
 
 2. In the very worst case, this will perform a very high amount of attempts to insert. This is by design, as we assume that potential conflicts are relatively rare and, if they happen, can be circumvented by an acceptable amount of retries.
 
+3. Only works with MongoDB’s (default) “WiredTiger” storage engine. This is due to the fact that other engines product differently structured error types which do not contain the necessary index information.
+
 ## Installation
 
 ```shell
@@ -79,9 +81,11 @@ Model = slugger.wrap(Model);
 
 Install NPM dependencies with `yarn`.
 
-To execute the tests, run the `test` task. It starts a new MongoDB instance using [mongodb-runner](https://github.com/mongodb-js/runner) and then executes the test cases. The test coverage report can be found in `coverage/index.html`.
+To execute the tests, run the `test` task. It starts a new MongoDB instance using [@shelf/jest-mongodb](https://github.com/shelfio/jest-mongodb) and then executes the test cases. The test coverage report can be found in `coverage/index.html`.
 
-For the best development experience, make sure that your editor supports [TSLint](https://palantir.github.io/tslint/usage/third-party-tools/) and [EditorConfig](http://editorconfig.org).
+For the best development experience, make sure that your editor supports [ESLint](https://eslint.org/docs/user-guide/integrations) and [EditorConfig](http://editorconfig.org).
+
+Linting of code and commit message happens on commit via [Husky](https://github.com/typicode/husky).
 
 ## Releasing to NPM
 
@@ -117,4 +121,4 @@ Pull requests are very welcome. Feel free to discuss bugs or new features by ope
 
 - - -
 
-Copyright Philipp Katz, [LineUpr GmbH](http://lineupr.com), 2018
+Copyright Philipp Katz, [LineUpr GmbH](http://lineupr.com), 2018 – 2020

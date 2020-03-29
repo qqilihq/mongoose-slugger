@@ -69,7 +69,7 @@ export class SluggerOptions<D extends Document> {
   readonly generator: GeneratorFunction<D>;
   readonly index: string;
   readonly maxAttempts?: number;
-  constructor (init: SluggerInitOptions<D>) {
+  constructor(init: SluggerInitOptions<D>) {
     if (!init) {
       throw new Error('config is missing.');
     }
@@ -123,8 +123,7 @@ export class SluggerError extends Error {
  * (4) after creating the model you **must** wrap the model with
  * the `slugger.wrap` function.
  */
-export function plugin (schema: Schema, options?: SluggerOptions<any>) {
-
+export function plugin(schema: Schema, options?: SluggerOptions<any>) {
   if (!options) {
     throw new Error('options are missing.');
   }
@@ -150,7 +149,7 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
     throw new Error(`the index '${options.index}' is not unique.`);
   }
   // make sure, that the `slugPath` is contained in the index
-  if (!index[0].hasOwnProperty(options.slugPath)) {
+  if (!{}.hasOwnProperty.call(index[0], options.slugPath)) {
     throw new Error(`the index '${options.index}' does not contain the slug path '${options.slugPath}'.`);
   }
 
@@ -167,7 +166,6 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
     }
     next();
   });
-
 }
 
 /**
@@ -181,8 +179,7 @@ export function plugin (schema: Schema, options?: SluggerOptions<any>) {
  *
  * @param model The model with the registered slugger plugin.
  */
-export function wrap<D extends Document> (model: Model<D>): Model<D> {
-
+export function wrap<D extends Document>(model: Model<D>): Model<D> {
   const plugins = utils.getSluggerPlugins(model.schema);
   if (plugins.length === 0) {
     throw new Error('slugger was not added to this model’s schema.');
@@ -194,24 +191,36 @@ export function wrap<D extends Document> (model: Model<D>): Model<D> {
 
   model.prototype[utils.delegatedSaveFunction] = model.prototype.save;
 
-  model.prototype.save = function (saveOptions: any, fn: any) {
+  // only check the storage engine *once* on first call
+  let hasCheckedStorageEngine = false;
 
+  // @ts-ignore -- ignore “TS7030: Not all code paths return a value.”
+  // this is fine, as we’re following Mongoose’s API here
+  model.prototype.save = function (saveOptions: any, fn: any) {
     if (typeof saveOptions === 'function') {
       fn = saveOptions;
       saveOptions = undefined;
     }
 
-    const promise = utils.saveSlugWithRetries(this, sluggerOptions, saveOptions);
+    let promise: Promise<any> = Promise.resolve();
+
+    if (!hasCheckedStorageEngine) {
+      promise = promise.then(() => utils.checkStorageEngine(model.db.db));
+      hasCheckedStorageEngine = true;
+    }
+
+    promise = promise.then(() => utils.saveSlugWithRetries(this, sluggerOptions, saveOptions));
 
     if (!fn) {
       return promise;
     }
 
     // nb: don't do then().catch() -- https://stackoverflow.com/a/40642436
-    promise.then(result => fn(undefined, result), reason => fn(reason));
-
+    promise.then(
+      result => fn(undefined, result),
+      reason => fn(reason)
+    );
   };
 
   return model;
-
 }
