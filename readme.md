@@ -93,7 +93,7 @@ Commit all changes and run the following:
 
 ```shell
 $ npm login
-$ npm version <update_type>
+$ yarn version --<update_type>
 $ npm publish
 ```
 
