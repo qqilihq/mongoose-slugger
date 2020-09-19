@@ -4,6 +4,7 @@ import * as utils from '../lib/sluggerUtils';
 import limax from 'limax';
 import fs from 'fs';
 import path from 'path';
+import { MongoError } from 'mongodb';
 
 interface MyDocument extends mongoose.Document {
   firstname: string;
@@ -55,12 +56,12 @@ describe('slugger', () => {
 
   describe('options validation', () => {
     it('throws when creating config with missing object', () => {
-      // @ts-ignore
+      // @ts-expect-error constructor requires argument
       expect(() => new slugger.SluggerOptions()).toThrowError(/config is missing./);
     });
 
     it('throws error when configuration is missing', () => {
-      // @ts-ignore
+      // @ts-expect-error function requires argument
       expect(() => slugger.plugin()).toThrowError(/options are missing./);
     });
 
@@ -69,7 +70,7 @@ describe('slugger', () => {
     });
 
     it('throws error when index is missing', () => {
-      // @ts-ignore
+      // @ts-expect-error `index` argument is missing
       expect(() => new slugger.SluggerOptions({})).toThrowError(/`index` is missing./);
     });
 
@@ -217,7 +218,7 @@ describe('slugger', () => {
           city: 'memphis',
           country: 'usa',
           email: 'john@example.com'
-        });
+        } as any);
         const doc2 = await utils.saveSlugWithRetries(
           new Model({
             firstname: 'john',
@@ -238,7 +239,7 @@ describe('slugger', () => {
           city: 'memphis',
           country: 'usa',
           email: 'john@example.com'
-        }); // slug = john-doe
+        } as any); // slug = john-doe
         for (let n = 2; n <= 10; n++) {
           const doc = await utils.saveSlugWithRetries(
             new Model({
@@ -281,14 +282,16 @@ describe('slugger', () => {
           fail();
         } catch (e) {
           expect(e).toBeInstanceOf(slugger.SluggerError);
-          expect(e.message).toEqual('Reached 10 attempts without being able to insert. Giving up.');
+          expect((e as slugger.SluggerError).message).toEqual(
+            'Reached 10 attempts without being able to insert. Giving up.'
+          );
         }
       });
     });
 
     describe('promises', () => {
       it('generates slug', async () => {
-        const doc = await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' });
+        const doc = await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' } as any);
         expect(doc.slug).toEqual('john-doe');
       });
 
@@ -299,14 +302,14 @@ describe('slugger', () => {
           city: 'memphis',
           country: 'usa',
           email: 'john@example.com'
-        });
+        } as any);
         const doc2 = await Model.create({
           firstname: 'john',
           lastname: 'doe',
           city: 'memphis',
           country: 'usa',
           email: 'john2@example.com'
-        });
+        } as any);
         expect(doc2.slug).toEqual('john-doe-2');
       });
 
@@ -317,7 +320,7 @@ describe('slugger', () => {
           city: 'memphis',
           country: 'usa',
           slug: 'john'
-        });
+        } as any);
         expect(doc.slug).toEqual('john');
       });
 
@@ -342,18 +345,18 @@ describe('slugger', () => {
           fail();
         } catch (e) {
           expect(e).toBeInstanceOf(Object);
-          expect(e.code).toEqual(11000);
+          expect((e as MongoError).code).toEqual(11000);
         }
       });
 
       it('correctly propagates error which is caused by duplicate on different index', async () => {
-        await Model.create({ firstname: 'john', lastname: 'doe', email: 'john@example.com' });
+        await Model.create({ firstname: 'john', lastname: 'doe', email: 'john@example.com' } as any);
         try {
-          await Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' });
+          await Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any);
           fail();
         } catch (e) {
           expect(e).toBeInstanceOf(Object);
-          expect(e.code).toEqual(11000);
+          expect((e as MongoError).code).toEqual(11000);
         }
       });
 
@@ -362,38 +365,43 @@ describe('slugger', () => {
 
     describe('callbacks', () => {
       it('does not return promises when using callbacks', done => {
-        const result = new Model({}).save(err => done(err));
+        const result = new Model({}).save(err => void done(err));
         expect(result).toBeUndefined();
       });
 
       it('generates slug', done => {
-        // tslint:disable-next-line:no-floating-promises
-        new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' }).save((err, product) => {
-          expect(err).toBeUndefined();
-          expect(product).toBeInstanceOf(Object);
-          done();
-        });
+        void new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' } as any).save(
+          (err, product) => {
+            expect(err).toBeUndefined();
+            expect(product).toBeInstanceOf(Object);
+            done();
+          }
+        );
       });
 
       it('generates another slug in case of a conflict', done => {
-        // tslint:disable-next-line:no-floating-promises
-        new Model({
+        void new Model({
           firstname: 'john',
           lastname: 'doe',
           city: 'memphis',
           country: 'usa',
           email: 'john@example.com'
-        }).save(err => {
-          if (err) return done(err);
-          // tslint:disable-next-line:no-floating-promises
-          new Model({
+        } as any).save(err => {
+          if (err) {
+            done(err);
+            return;
+          }
+          void new Model({
             firstname: 'john',
             lastname: 'doe',
             city: 'memphis',
             country: 'usa',
             email: 'john2@example.com'
           }).save((err, product) => {
-            if (err) return done(err);
+            if (err) {
+              done(err);
+              return;
+            }
             expect(err).toBeUndefined();
             expect(product.slug).toEqual('john-doe-2');
             done();
@@ -402,13 +410,14 @@ describe('slugger', () => {
       });
 
       it('propagates error which is caused by duplicate on different index', done => {
-        // tslint:disable-next-line:no-floating-promises
-        new Model({ firstname: 'john', lastname: 'doe', email: 'john@example.com' }).save(err => {
-          if (err) return done(err);
-          // tslint:disable-next-line:no-floating-promises
-          new Model({ firstname: 'john', lastname: 'dope', email: 'john@example.com' }).save(err => {
+        void new Model({ firstname: 'john', lastname: 'doe', email: 'john@example.com' } as any).save(err => {
+          if (err) {
+            done(err);
+            return;
+          }
+          void new Model({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any).save(err => {
             expect(err).toBeInstanceOf(Object);
-            expect(err.code).toEqual(11000);
+            expect((err as MongoError).code).toEqual(11000);
             done();
           });
         });
@@ -440,13 +449,13 @@ describe('slugger', () => {
       });
 
       it('throws when same slugs are generated within one save cycle', async () => {
-        await Model2.create({ firstname: 'john' });
+        await Model2.create({ firstname: 'john' } as any);
         try {
-          await Model2.create({ firstname: 'john' });
+          await Model2.create({ firstname: 'john' } as any);
           fail();
         } catch (e) {
           expect(e).toBeInstanceOf(slugger.SluggerError);
-          expect(e.message).toEqual("Already attempted slug 'john' before. Giving up.");
+          expect((e as slugger.SluggerError).message).toEqual("Already attempted slug 'john' before. Giving up.");
         }
       });
     });
@@ -465,12 +474,14 @@ describe('slugger', () => {
 
     describe('checking storage engine', () => {
       it('throws error with `ephemeralForTest`', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const status = await readJson(path.join(__dirname, '__data/status_ephemeralForTest.json'));
         expect(() => utils.checkStorageEngineStatus(status)).toThrowError(
           "Storage Engine is set to 'ephemeralForTest', but only 'wiredTiger' is supported at the moment."
         );
       });
       it('throws no error with `wiredTiger`', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const status = await readJson(path.join(__dirname, '__data/status_wiredTiger.json'));
         expect(() => utils.checkStorageEngineStatus(status)).not.toThrowError();
       });
@@ -492,5 +503,6 @@ describe('slugger', () => {
 
 async function readJson(path: string): Promise<any> {
   const jsonString = await fs.promises.readFile(path, 'utf8');
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return JSON.parse(jsonString);
 }

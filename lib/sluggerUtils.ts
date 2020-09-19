@@ -21,11 +21,13 @@ export async function saveSlugWithRetries<D extends Document>(
 ): Promise<D> {
   for (;;) {
     try {
-      // eslint-disable-next-line @typescript-eslint/unbound-method
+      // eslint-disable-next-line @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const saveFunction = (document as any)[delegatedSaveFunction] || document.save;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
       return await saveFunction.call(document, saveOptions);
     } catch (e) {
       if (isMongoError(e)) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const slugAttachment = (document as any)[attachmentPropertyName] as SlugDocumentAttachment;
         if (
           slugAttachment &&
@@ -33,7 +35,7 @@ export async function saveSlugWithRetries<D extends Document>(
           e.message &&
           extractIndexNameFromError(e.message) === sluggerOptions.index
         ) {
-          const attemptedSlug = document.get(sluggerOptions.slugPath);
+          const attemptedSlug = document.get(sluggerOptions.slugPath) as string;
 
           if (slugAttachment.slugAttempts.includes(attemptedSlug)) {
             throw new slugger.SluggerError(`Already attempted slug '${attemptedSlug}' before. Giving up.`);
@@ -58,9 +60,9 @@ export async function saveSlugWithRetries<D extends Document>(
 
 export function createDefaultGenerator(paths: string | string[]): slugger.GeneratorFunction<Document> {
   return (doc, attempt) => {
-    const values = ([] as string[]).concat(paths).map(path => doc.get(path));
+    const values = ([] as string[]).concat(paths).map(path => doc.get(path) as string);
     if (attempt > 0) {
-      values.push(attempt + 1);
+      values.push(`${attempt + 1}`);
     }
     // replace underscore with hyphen
     return limax(values.join('-'), { custom: { _: '-' } });
@@ -75,24 +77,28 @@ export function extractIndexNameFromError(msg: string): string | undefined {
 
 /** Gets all Slugger plugins which are assigned to the given schema. */
 export function getSluggerPlugins(schema: Schema): any[] {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   return (schema as any).plugins.filter((p: any) => p.fn === slugger.plugin);
 }
 
 function isMongoError(e: any): e is MongoError {
-  return ['MongoError', 'BulkWriteError'].includes(e.name);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  return typeof e.name === 'string' && ['MongoError', 'BulkWriteError'].includes(e.name);
 }
 
 export async function checkStorageEngine(db: mongodb.Db): Promise<void> {
   checkStorageEngineStatus(await db.admin().serverStatus());
 }
 
-export function checkStorageEngineStatus(status: any) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function checkStorageEngineStatus(status: any): void {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (!status.storageEngine || !status.storageEngine.name) {
     throw new Error('status.storageEngine is missing');
   }
-  if (status.storageEngine.name !== 'wiredTiger') {
-    throw new Error(
-      `Storage Engine is set to '${status.storageEngine.name}', but only 'wiredTiger' is supported at the moment.`
-    );
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const name = status.storageEngine.name as string;
+  if (name !== 'wiredTiger') {
+    throw new Error(`Storage Engine is set to '${name}', but only 'wiredTiger' is supported at the moment.`);
   }
 }
