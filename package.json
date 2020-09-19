@@ -28,7 +28,7 @@
     "preversion": "run-s clean lint test build"
   },
   "dependencies": {
-    "limax": "^2.0.0"
+    "limax": "^2.1.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^8.3.5",
