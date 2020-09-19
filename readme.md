@@ -1,6 +1,6 @@
 # Slugger for Mongoose
 
-<!-- TODO re-add build and coverage badges -->
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fqqilihq%2Fmongoose-slugger%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/qqilihq/mongoose-slugger/goto?ref=master)
 [![codecov](https://codecov.io/gh/qqilihq/mongoose-slugger/branch/master/graph/badge.svg)](https://codecov.io/gh/qqilihq/mongoose-slugger)
 [![npm version](https://badge.fury.io/js/mongoose-slugger-plugin.svg)](https://badge.fury.io/js/mongoose-slugger-plugin)
 
