@@ -54,6 +54,11 @@ describe('slugger', () => {
     Model = slugger.wrap(Model);
   });
 
+  afterAll(async () => {
+    // https://github.com/shelfio/jest-mongodb/issues/214#issuecomment-659535865
+    await fs.promises.unlink(process.cwd() + '/globalConfig.json');
+  });
+
   describe('options validation', () => {
     it('throws when creating config with missing object', () => {
       // @ts-expect-error constructor requires argument
