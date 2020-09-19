@@ -173,6 +173,14 @@ describe('slugger', () => {
         expect(generator(new Model({ firstname: 'john' }), 1)).toEqual('john-2');
       });
     });
+
+    describe('allowed characters', () => {
+      it('replaces underscore with hyphen', () => {
+        const doc = new Model({ firstname: 'john_bob' });
+        const generator = utils.createDefaultGenerator('firstname');
+        expect(generator(doc, 0)).toEqual('john-bob');
+      });
+    });
   });
 
   describe('validation', () => {
@@ -466,6 +474,18 @@ describe('slugger', () => {
         const status = await readJson(path.join(__dirname, '__data/status_wiredTiger.json'));
         expect(() => utils.checkStorageEngineStatus(status)).not.toThrowError();
       });
+    });
+
+    it('limax character mapping', () => {
+      const unmappedCharacters: string[] = [];
+      for (let idx = 0; idx < 65535; idx++) {
+        const char = String.fromCharCode(idx);
+        const slugged = limax(char);
+        if (char === slugged) {
+          unmappedCharacters.push(char);
+        }
+      }
+      expect(unmappedCharacters.join('')).toEqual('0123456789_abcdefghijklmnopqrstuvwxyz');
     });
   });
 });

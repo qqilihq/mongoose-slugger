@@ -62,7 +62,8 @@ export function createDefaultGenerator(paths: string | string[]): slugger.Genera
     if (attempt > 0) {
       values.push(attempt + 1);
     }
-    return limax(values.join('-'));
+    // replace underscore with hyphen
+    return limax(values.join('-'), { custom: { _: '-' } });
   };
 }
 
