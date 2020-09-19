@@ -21,11 +21,16 @@ jobs:
           # Version Spec of the version to use.  Examples: 10.x, 10.15.1, >=10.15.0
           node-version: ">=12"
 
-      - name: CI
+      - name: Lint, test, and build
         run: |
           npm install -g yarn
           yarn install
           yarn run lint
           # https://stackoverflow.com/a/52357797/388827
-          yarn run jest --ci --reporters=jest-junit --reporters=default --coverage --coverageReporters=cobertura --coverageReporters=html
+          yarn run jest --ci --reporters=jest-junit --reporters=default --coverage
           yarn run build
+
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage/coverage-final.json
+          fail_ci_if_error: true
