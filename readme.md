@@ -1,6 +1,7 @@
 # Slugger for Mongoose
 
 <!-- TODO re-add build and coverage badges -->
+[![codecov](https://codecov.io/gh/qqilihq/mongoose-slugger/branch/master/graph/badge.svg)](https://codecov.io/gh/qqilihq/mongoose-slugger)
 [![npm version](https://badge.fury.io/js/mongoose-slugger-plugin.svg)](https://badge.fury.io/js/mongoose-slugger-plugin)
 
 Automatically generates so called “slugs” for [Mongoose](http://mongoosejs.com) documents. Slugs are typically used as human-readable parts of URLs instead of machine-readable identifiers (see e.g. [here](https://stackoverflow.com/questions/427102/what-is-a-slug-in-django) or [here](https://stackoverflow.com/questions/19335215/what-is-a-slug)).
