@@ -186,7 +186,7 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
  *
  * @param model The model with the registered slugger plugin.
  */
-export function wrap<D extends Document>(model: Model<D>): Model<D> {
+export function wrap<M extends Model<any>>(model: M): M {
   const plugins = utils.getSluggerPlugins(model.schema);
   if (plugins.length === 0) {
     throw new Error('slugger was not added to this model’s schema.');
