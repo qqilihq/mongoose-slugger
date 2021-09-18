@@ -207,7 +207,8 @@ describe('slugger', () => {
       mongoose.connect(process.env.MONGO_URL as string, {
         connectTimeoutMS: 30 * 1000 /* 30 seconds */,
         useNewUrlParser: true,
-        useCreateIndex: true
+        useCreateIndex: true,
+        useUnifiedTopology: true
       })
     );
     beforeEach(() =>
