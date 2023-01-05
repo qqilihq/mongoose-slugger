@@ -6,9 +6,9 @@ import * as mongodb from 'mongodb';
 
 // internal utilities which are not meant to belong to the API
 
-export const delegatedSaveFunction = '_sluggerSaveDelegate';
+export const delegatedSaveFunction = Symbol('_sluggerSaveDelegate');
 
-export const attachmentPropertyName = '_sluggerAttachment';
+export const attachmentPropertyName = Symbol('_sluggerAttachment');
 
 export class SlugDocumentAttachment {
   slugAttempts: string[] = [];
