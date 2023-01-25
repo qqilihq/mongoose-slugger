@@ -63,7 +63,8 @@ const sluggerOptions = new slugger.SluggerOptions({
   // the property path which stores the slug value
   slugPath: 'slug',
   // specify the properties which will be used for generating the slug
-  generateFrom: [ 'firstname', 'lastname' ],
+  generateFrom: ['firstname', 'lastname'],
+  maxLength: 0,
   // the unique index, see above
   index: 'city_slug'
 });

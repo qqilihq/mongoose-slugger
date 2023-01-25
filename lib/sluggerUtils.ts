@@ -59,14 +59,20 @@ export async function saveSlugWithRetries<D extends Document>(
 }
 
 export function createDefaultGenerator(paths: string | string[]): slugger.GeneratorFunction<Document> {
-  return (doc, attempt) => {
+  return (doc: Document, attempt: number, maxLength?: number) => {
     const values = ([] as string[]).concat(paths).map(path => doc.get(path) as string);
     if (attempt > 0) {
       values.push(`${attempt + 1}`);
     }
     // replace underscore with hyphen
-    return limax(values.join('-'), { custom: { _: '-' } });
+    const slug = limax(values.join('-'), { custom: { _: '-' } });
+    return maxLength && maxLength > 0 ? trimSlug(slug, maxLength) : slug;
   };
+}
+
+export function trimSlug(slug: string, maxLength?: number): string {
+  const trimmedSlug = slug.substring(0, maxLength);
+  return trimmedSlug.substring(0, Math.min(trimmedSlug.length, trimmedSlug.lastIndexOf('-')));
 }
 
 export function extractIndexNameFromError(msg: string): string | undefined {

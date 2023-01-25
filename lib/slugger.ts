@@ -14,7 +14,7 @@ export interface GeneratorFunction<D extends Document> {
    * @param attempt Number of attempt, starting with zero.
    * @returns A new slug, such as 'john-doe'.
    */
-  (doc: D, attempt: number): string;
+  (doc: D, attempt: number, maxLength?: number): string;
 }
 
 /**
@@ -62,6 +62,14 @@ export interface SluggerInitOptions<D extends Document> {
    * forever.
    */
   maxAttempts?: number;
+
+  /**
+   * The maximum length for the slug.
+   *
+   * In case the value is not specified, there is **no** limit of
+   * length for the slug.
+   */
+  maxLength?: number;
 }
 
 export class SluggerOptions<D extends Document> {
@@ -69,6 +77,7 @@ export class SluggerOptions<D extends Document> {
   readonly generator: GeneratorFunction<D>;
   readonly index: string;
   readonly maxAttempts?: number;
+  readonly maxLength?: number;
   constructor(init: SluggerInitOptions<D>) {
     if (!init) {
       throw new Error('config is missing.');
@@ -98,6 +107,7 @@ export class SluggerOptions<D extends Document> {
     }
 
     this.maxAttempts = init.maxAttempts;
+    this.maxLength = init.maxLength;
   }
 }
 
@@ -169,7 +179,7 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
     }
     if (slugAttachment) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length));
+      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length, options.maxLength));
     }
     next();
   });
