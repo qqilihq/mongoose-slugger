@@ -148,8 +148,17 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
   }
 
   // make sure, that the `slugPath` exists
-  if (!schema.path(options.slugPath)) {
+  const schemaType: any = schema.path(options.slugPath);
+  if (!schemaType) {
     throw new Error(`the slug path '${options.slugPath}' does not exist in the schema.`);
+  }
+
+  // check if there is a `maxLength` constraint for the `slugPath`
+  let maxlength = Number.MAX_SAFE_INTEGER;
+  if (typeof options.maxLength === 'number') {
+    maxlength = options.maxLength;
+  } else if (schemaType.options && typeof schemaType.options.maxlength === 'number') {
+    maxlength = schemaType.options.maxlength;
   }
 
   // make sure the specified index exists
@@ -182,7 +191,7 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
     }
     if (slugAttachment) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length, options.maxLength));
+      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length, maxlength));
     }
     next();
   });

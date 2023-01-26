@@ -61,18 +61,16 @@ export async function saveSlugWithRetries<D extends Document>(
 export function createDefaultGenerator(paths: string | string[]): slugger.GeneratorFunction<Document> {
   return (doc: Document, attempt: number, maxLength?: number) => {
     const values = ([] as string[]).concat(paths).map(path => doc.get(path) as string);
-    if (attempt > 0) {
-      values.push(`${attempt + 1}`);
-    }
     // replace underscore with hyphen
     const slug = limax(values.join('-'), { custom: { _: '-' } });
-    return maxLength ? trimSlug(slug, maxLength) : slug;
+    const suffix = attempt > 0 ? `-${attempt + 1}` : '';
+    return (maxLength ? trimSlug(slug, maxLength - suffix.length) : slug) + suffix;
   };
 }
 
 export function trimSlug(slug: string, maxLength?: number): string {
   const trimmedSlug = slug.substring(0, maxLength);
-  return trimmedSlug.substring(0, Math.min(trimmedSlug.length, trimmedSlug.lastIndexOf('-')));
+  return trimmedSlug.lastIndexOf('-') + 1 === trimmedSlug.length ? trimmedSlug.slice(0, -1) : trimmedSlug;
 }
 
 export function extractIndexNameFromError(msg: string): string | undefined {
