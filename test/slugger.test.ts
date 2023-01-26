@@ -301,17 +301,19 @@ describe('slugger', () => {
           );
         }
         try {
-          await utils.saveSlugWithRetries(
-            new Model({
-              firstname: 'john',
-              lastname: 'doe',
-              city: 'memphis',
-              country: 'usa',
-              email: `john@example.com`
-            }),
-            sluggerOptions
-          );
-          fail();
+          await expect(
+            async () =>
+              await utils.saveSlugWithRetries(
+                new Model({
+                  firstname: 'john',
+                  lastname: 'doe',
+                  city: 'memphis',
+                  country: 'usa',
+                  email: `john@example.com`
+                }),
+                sluggerOptions
+              )
+          ).rejects.toThrow();
         } catch (e) {
           expect(e).toBeInstanceOf(slugger.SluggerError);
           expect((e as slugger.SluggerError).message).toEqual(
@@ -366,15 +368,17 @@ describe('slugger', () => {
           slug: 'john'
         });
         try {
-          await Model.create({
-            firstname: 'john',
-            lastname: 'dope',
-            city: 'memphis',
-            country: 'usa',
-            email: 'john.dope@example.com',
-            slug: 'john'
-          });
-          fail();
+          await expect(
+            async () =>
+              await Model.create({
+                firstname: 'john',
+                lastname: 'dope',
+                city: 'memphis',
+                country: 'usa',
+                email: 'john.dope@example.com',
+                slug: 'john'
+              })
+          ).rejects.toThrow();
         } catch (e) {
           expect(e).toBeInstanceOf(Object);
           expect((e as MongoError).code).toEqual(11000);
@@ -384,8 +388,9 @@ describe('slugger', () => {
       it('correctly propagates error which is caused by duplicate on different index', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', email: 'john@example.com' } as any);
         try {
-          await Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any);
-          fail();
+          await expect(
+            async () => await Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any)
+          ).rejects.toThrow();
         } catch (e) {
           expect(e).toBeInstanceOf(Object);
           expect((e as MongoError).code).toEqual(11000);
@@ -484,8 +489,7 @@ describe('slugger', () => {
       it('throws when same slugs are generated within one save cycle', async () => {
         await Model2.create({ firstname: 'john' } as any);
         try {
-          await Model2.create({ firstname: 'john' } as any);
-          fail();
+          await expect(async () => await Model2.create({ firstname: 'john' } as any)).rejects.toThrow();
         } catch (e) {
           expect(e).toBeInstanceOf(slugger.SluggerError);
           expect((e as slugger.SluggerError).message).toEqual("Already attempted slug 'john' before. Giving up.");
