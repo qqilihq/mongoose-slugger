@@ -300,26 +300,18 @@ describe('slugger', () => {
             sluggerOptions
           );
         }
-        try {
-          await expect(
-            async () =>
-              await utils.saveSlugWithRetries(
-                new Model({
-                  firstname: 'john',
-                  lastname: 'doe',
-                  city: 'memphis',
-                  country: 'usa',
-                  email: `john@example.com`
-                }),
-                sluggerOptions
-              )
-          ).rejects.toThrow();
-        } catch (e) {
-          expect(e).toBeInstanceOf(slugger.SluggerError);
-          expect((e as slugger.SluggerError).message).toEqual(
-            'Reached 10 attempts without being able to insert. Giving up.'
-          );
-        }
+        await expect(() =>
+          utils.saveSlugWithRetries(
+            new Model({
+              firstname: 'john',
+              lastname: 'doe',
+              city: 'memphis',
+              country: 'usa',
+              email: `john@example.com`
+            }),
+            sluggerOptions
+          )
+        ).rejects.toThrowError('Reached 10 attempts without being able to insert. Giving up.');
       });
     });
 
@@ -367,34 +359,27 @@ describe('slugger', () => {
           email: 'john.doe@example.com',
           slug: 'john'
         });
-        try {
-          await expect(
-            async () =>
-              await Model.create({
-                firstname: 'john',
-                lastname: 'dope',
-                city: 'memphis',
-                country: 'usa',
-                email: 'john.dope@example.com',
-                slug: 'john'
-              })
-          ).rejects.toThrow();
-        } catch (e) {
-          expect(e).toBeInstanceOf(Object);
-          expect((e as MongoError).code).toEqual(11000);
-        }
+        await expect(() =>
+          Model.create({
+            firstname: 'john',
+            lastname: 'dope',
+            city: 'memphis',
+            country: 'usa',
+            email: 'john.dope@example.com',
+            slug: 'john'
+          })
+        ).rejects.toThrowError(
+          'E11000 duplicate key error collection: test.slugmodels index: city_country_slug dup key: { city: "memphis", country: "usa", slug: "john" }'
+        );
       });
 
       it('correctly propagates error which is caused by duplicate on different index', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', email: 'john@example.com' } as any);
-        try {
-          await expect(
-            async () => await Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any)
-          ).rejects.toThrow();
-        } catch (e) {
-          expect(e).toBeInstanceOf(Object);
-          expect((e as MongoError).code).toEqual(11000);
-        }
+        await expect(
+          Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any)
+        ).rejects.toThrowError(
+          '11000 duplicate key error collection: test.slugmodels index: email dup key: { email: "john@example.com" }'
+        );
       });
 
       it.todo('correctly propagates error which is not caused by duplicate keys');
@@ -489,7 +474,7 @@ describe('slugger', () => {
       it('throws when same slugs are generated within one save cycle', async () => {
         await Model2.create({ firstname: 'john' } as any);
         try {
-          await expect(async () => await Model2.create({ firstname: 'john' } as any)).rejects.toThrow();
+          await expect(await Model2.create({ firstname: 'john' } as any)).rejects.toThrow();
         } catch (e) {
           expect(e).toBeInstanceOf(slugger.SluggerError);
           expect((e as slugger.SluggerError).message).toEqual("Already attempted slug 'john' before. Giving up.");
