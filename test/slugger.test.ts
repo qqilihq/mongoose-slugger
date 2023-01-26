@@ -123,6 +123,12 @@ describe('slugger', () => {
       );
     });
 
+    it('throws error when `maxLength` is less than one', () => {
+      expect(() => new slugger.SluggerOptions({ generateFrom: 'name', index: 'name', maxLength: 0 })).toThrowError(
+        /`maxLength` must be at least one./
+      );
+    });
+
     it('throws error when `slugPath` is missing in the schema', () => {
       const schema = new mongoose.Schema({ name: String });
       const sluggerOptions = new slugger.SluggerOptions({
@@ -177,6 +183,26 @@ describe('slugger', () => {
 
       it('ignores missing values', () => {
         expect(generator(new Model({ firstname: 'john' }), 1)).toEqual('john-2');
+      });
+    });
+
+    describe('with `maxlength`', () => {
+      const generator = utils.createDefaultGenerator(['firstname', 'lastname']);
+
+      beforeEach(() => {
+        doc = new Model({ firstname: 'Salvador Felipe Jacinto Dalí y', lastname: 'Domenech' });
+      });
+
+      it('generates uncut slug', () => {
+        expect(generator(doc, 0)).toEqual('salvador-felipe-jacinto-dali-y-domenech');
+      });
+
+      it('trims slug to given `maxLength` with sequence 0', () => {
+        expect(generator(doc, 0, 25)).toEqual('salvador-felipe-jacinto-d');
+      });
+
+      it('trims slug to given `maxLength` with sequence 1', () => {
+        expect(generator(doc, 1, 25)).toEqual('salvador-felipe-jacinto-2');
       });
     });
 
@@ -275,17 +301,19 @@ describe('slugger', () => {
           );
         }
         try {
-          await utils.saveSlugWithRetries(
-            new Model({
-              firstname: 'john',
-              lastname: 'doe',
-              city: 'memphis',
-              country: 'usa',
-              email: `john@example.com`
-            }),
-            sluggerOptions
-          );
-          fail();
+          await expect(
+            async () =>
+              await utils.saveSlugWithRetries(
+                new Model({
+                  firstname: 'john',
+                  lastname: 'doe',
+                  city: 'memphis',
+                  country: 'usa',
+                  email: `john@example.com`
+                }),
+                sluggerOptions
+              )
+          ).rejects.toThrow();
         } catch (e) {
           expect(e).toBeInstanceOf(slugger.SluggerError);
           expect((e as slugger.SluggerError).message).toEqual(
@@ -340,15 +368,17 @@ describe('slugger', () => {
           slug: 'john'
         });
         try {
-          await Model.create({
-            firstname: 'john',
-            lastname: 'dope',
-            city: 'memphis',
-            country: 'usa',
-            email: 'john.dope@example.com',
-            slug: 'john'
-          });
-          fail();
+          await expect(
+            async () =>
+              await Model.create({
+                firstname: 'john',
+                lastname: 'dope',
+                city: 'memphis',
+                country: 'usa',
+                email: 'john.dope@example.com',
+                slug: 'john'
+              })
+          ).rejects.toThrow();
         } catch (e) {
           expect(e).toBeInstanceOf(Object);
           expect((e as MongoError).code).toEqual(11000);
@@ -358,8 +388,9 @@ describe('slugger', () => {
       it('correctly propagates error which is caused by duplicate on different index', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', email: 'john@example.com' } as any);
         try {
-          await Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any);
-          fail();
+          await expect(
+            async () => await Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any)
+          ).rejects.toThrow();
         } catch (e) {
           expect(e).toBeInstanceOf(Object);
           expect((e as MongoError).code).toEqual(11000);
@@ -434,7 +465,7 @@ describe('slugger', () => {
       let Model2: mongoose.Model<MyDocument>;
       let sluggerOptions2: slugger.SluggerOptions<MyDocument>;
 
-      beforeAll(() => {
+      beforeAll(async () => {
         const schema2 = new mongoose.Schema({
           firstname: String,
           slug: String
@@ -452,17 +483,87 @@ describe('slugger', () => {
 
         Model2 = mongoose.model<MyDocument>('SlugModel2', schema2);
         Model2 = slugger.wrap(Model2);
+        await Model2.ensureIndexes();
       });
 
       it('throws when same slugs are generated within one save cycle', async () => {
         await Model2.create({ firstname: 'john' } as any);
         try {
-          await Model2.create({ firstname: 'john' } as any);
-          fail();
+          await expect(async () => await Model2.create({ firstname: 'john' } as any)).rejects.toThrow();
         } catch (e) {
           expect(e).toBeInstanceOf(slugger.SluggerError);
           expect((e as slugger.SluggerError).message).toEqual("Already attempted slug 'john' before. Giving up.");
         }
+      });
+    });
+
+    describe('generating slugs with `maxlength` on schema', () => {
+      let Model3: mongoose.Model<MyDocument>;
+      let sluggerOptions3: slugger.SluggerOptions<MyDocument>;
+
+      beforeAll(async () => {
+        const schema3 = new mongoose.Schema({
+          firstname: String,
+          slug: { type: String, maxlength: 25 }
+        });
+
+        schema3.index({ slug: 1 }, { name: 'slug', unique: true });
+
+        sluggerOptions3 = new slugger.SluggerOptions<MyDocument>({
+          slugPath: 'slug',
+          generateFrom: 'firstname',
+          index: 'slug'
+        });
+
+        schema3.plugin(slugger.plugin, sluggerOptions3);
+
+        Model3 = mongoose.model<MyDocument>('SlugModel3', schema3);
+        Model3 = slugger.wrap(Model3);
+        await Model3.ensureIndexes();
+      });
+
+      it('shortens slugs to `maxlength`', async () => {
+        const doc = await Model3.create({
+          firstname: 'Salvador Felipe Jacinto Dalí y',
+          lastname: 'Domenech'
+        } as any);
+        expect(doc.slug).toHaveLength(25);
+        expect(doc.slug).toEqual('salvador-felipe-jacinto-d');
+      });
+    });
+
+    describe('generate slugs with `maxLength` on options', () => {
+      let Model4: mongoose.Model<MyDocument>;
+
+      beforeAll(async () => {
+        const schema4 = new mongoose.Schema({
+          firstname: String,
+          slug: { type: String, maxlength: 50 }
+        });
+
+        schema4.index({ slug: 1 }, { name: 'slug', unique: true });
+
+        const sluggerOptions4 = new slugger.SluggerOptions<MyDocument>({
+          slugPath: 'slug',
+          generateFrom: 'firstname',
+          index: 'slug',
+          maxLength: 25
+        });
+
+        schema4.plugin(slugger.plugin, sluggerOptions4);
+
+        Model4 = mongoose.model<MyDocument>('SlugModel4', schema4);
+        Model4 = slugger.wrap(Model4);
+        await Model4.ensureIndexes();
+      });
+
+      it('shortens slugs to `maxlength`', async () => {
+        const doc = await Model4.create({
+          firstname: 'Salvador Felipe Jacinto Dalí y',
+          lastname: 'Domenech'
+        } as any);
+        expect(doc.slug).toHaveLength(25);
+        expect(doc.slug).toEqual('salvador-felipe-jacinto-d');
       });
     });
   });

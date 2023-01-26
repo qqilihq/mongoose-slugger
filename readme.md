@@ -63,7 +63,9 @@ const sluggerOptions = new slugger.SluggerOptions({
   // the property path which stores the slug value
   slugPath: 'slug',
   // specify the properties which will be used for generating the slug
-  generateFrom: [ 'firstname', 'lastname' ],
+  generateFrom: ['firstname', 'lastname'],
+  // specify the max length for the slug
+  maxLength: 30,
   // the unique index, see above
   index: 'city_slug'
 });
@@ -76,6 +78,8 @@ let Model = mongoose.model('MyModel', schema);
 // make sure to wrap the Mongoose model
 Model = slugger.wrap(Model);
 ```
+
+**maxLength:** can be explicitly specified in the `sluggerOptions`. This plugin will read the maximum allowed length from mongo `schema` or `sluggerOptions`.
 
 ## Development
 

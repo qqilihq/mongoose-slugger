@@ -14,7 +14,7 @@ export interface GeneratorFunction<D extends Document> {
    * @param attempt Number of attempt, starting with zero.
    * @returns A new slug, such as 'john-doe'.
    */
-  (doc: D, attempt: number): string;
+  (doc: D, attempt: number, maxLength?: number): string;
 }
 
 /**
@@ -62,6 +62,14 @@ export interface SluggerInitOptions<D extends Document> {
    * forever.
    */
   maxAttempts?: number;
+
+  /**
+   * Specify a maximum length for the generated slugs.
+   *
+   * In case the value is not specified, there is **no** limit
+   * for slug's length. The value must be greater than zero.
+   */
+  maxLength?: number;
 }
 
 export class SluggerOptions<D extends Document> {
@@ -69,6 +77,7 @@ export class SluggerOptions<D extends Document> {
   readonly generator: GeneratorFunction<D>;
   readonly index: string;
   readonly maxAttempts?: number;
+  readonly maxLength?: number;
   constructor(init: SluggerInitOptions<D>) {
     if (!init) {
       throw new Error('config is missing.');
@@ -78,6 +87,9 @@ export class SluggerOptions<D extends Document> {
     }
     if (!init.generateFrom) {
       throw new Error('`generateFrom` is missing.');
+    }
+    if (typeof init.maxLength === 'number' && init.maxLength < 1) {
+      throw new Error('`maxLength` must be at least one.');
     }
     if (typeof init.maxAttempts === 'number' && init.maxAttempts < 1) {
       throw new Error('`maxAttempts` must be at least one.');
@@ -98,6 +110,7 @@ export class SluggerOptions<D extends Document> {
     }
 
     this.maxAttempts = init.maxAttempts;
+    this.maxLength = init.maxLength;
   }
 }
 
@@ -135,8 +148,17 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
   }
 
   // make sure, that the `slugPath` exists
-  if (!schema.path(options.slugPath)) {
+  const schemaType: any = schema.path(options.slugPath);
+  if (!schemaType) {
     throw new Error(`the slug path '${options.slugPath}' does not exist in the schema.`);
+  }
+
+  // check if there is a `maxLength` constraint for the `slugPath`
+  let maxlength = Number.MAX_SAFE_INTEGER;
+  if (typeof options.maxLength === 'number') {
+    maxlength = options.maxLength;
+  } else if (schemaType.options && typeof schemaType.options.maxlength === 'number') {
+    maxlength = schemaType.options.maxlength;
   }
 
   // make sure the specified index exists
@@ -169,7 +191,7 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
     }
     if (slugAttachment) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length));
+      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length, maxlength));
     }
     next();
   });
