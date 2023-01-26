@@ -460,7 +460,7 @@ describe('slugger', () => {
       let Model2: mongoose.Model<MyDocument>;
       let sluggerOptions2: slugger.SluggerOptions<MyDocument>;
 
-      beforeAll(() => {
+      beforeAll(async () => {
         const schema2 = new mongoose.Schema({
           firstname: String,
           slug: String
@@ -478,6 +478,7 @@ describe('slugger', () => {
 
         Model2 = mongoose.model<MyDocument>('SlugModel2', schema2);
         Model2 = slugger.wrap(Model2);
+        await Model2.ensureIndexes();
       });
 
       it('throws when same slugs are generated within one save cycle', async () => {
@@ -496,7 +497,7 @@ describe('slugger', () => {
       let Model3: mongoose.Model<MyDocument>;
       let sluggerOptions3: slugger.SluggerOptions<MyDocument>;
 
-      beforeAll(() => {
+      beforeAll(async () => {
         const schema3 = new mongoose.Schema({
           firstname: String,
           slug: { type: String, maxlength: 25 }
@@ -514,6 +515,7 @@ describe('slugger', () => {
 
         Model3 = mongoose.model<MyDocument>('SlugModel3', schema3);
         Model3 = slugger.wrap(Model3);
+        await Model3.ensureIndexes();
       });
 
       it('shortens slugs to `maxlength`', async () => {
@@ -529,7 +531,7 @@ describe('slugger', () => {
     describe('generate slugs with `maxLength` on options', () => {
       let Model4: mongoose.Model<MyDocument>;
 
-      beforeAll(() => {
+      beforeAll(async () => {
         const schema4 = new mongoose.Schema({
           firstname: String,
           slug: { type: String, maxlength: 50 }
@@ -548,6 +550,7 @@ describe('slugger', () => {
 
         Model4 = mongoose.model<MyDocument>('SlugModel4', schema4);
         Model4 = slugger.wrap(Model4);
+        await Model4.ensureIndexes();
       });
 
       it('shortens slugs to `maxlength`', async () => {
