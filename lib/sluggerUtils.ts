@@ -66,7 +66,7 @@ export function createDefaultGenerator(paths: string | string[]): slugger.Genera
     }
     // replace underscore with hyphen
     const slug = limax(values.join('-'), { custom: { _: '-' } });
-    return maxLength && maxLength > 0 ? trimSlug(slug, maxLength) : slug;
+    return maxLength ? trimSlug(slug, maxLength) : slug;
   };
 }
 

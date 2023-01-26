@@ -64,10 +64,10 @@ export interface SluggerInitOptions<D extends Document> {
   maxAttempts?: number;
 
   /**
-   * The maximum length for the slug.
+   * Specify a maximum length for the generated slugs.
    *
-   * In case the value is not specified, there is **no** limit of
-   * length for the slug.
+   * In case the value is not specified, there is **no** limit
+   * for slug's length. The value must be greater than zero.
    */
   maxLength?: number;
 }
@@ -87,6 +87,9 @@ export class SluggerOptions<D extends Document> {
     }
     if (!init.generateFrom) {
       throw new Error('`generateFrom` is missing.');
+    }
+    if (typeof init.maxLength === 'number' && init.maxLength < 1) {
+      throw new Error('`maxLength` must be at least one.');
     }
     if (typeof init.maxAttempts === 'number' && init.maxAttempts < 1) {
       throw new Error('`maxAttempts` must be at least one.');
