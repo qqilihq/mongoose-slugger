@@ -123,6 +123,12 @@ describe('slugger', () => {
       );
     });
 
+    it('throws error when `maxLength` is less than one', () => {
+      expect(() => new slugger.SluggerOptions({ generateFrom: 'name', index: 'name', maxLength: 0 })).toThrowError(
+        /`maxLength` must be at least one./
+      );
+    });
+
     it('throws error when `slugPath` is missing in the schema', () => {
       const schema = new mongoose.Schema({ name: String });
       const sluggerOptions = new slugger.SluggerOptions({
@@ -177,6 +183,26 @@ describe('slugger', () => {
 
       it('ignores missing values', () => {
         expect(generator(new Model({ firstname: 'john' }), 1)).toEqual('john-2');
+      });
+    });
+
+    describe('with `maxlength`', () => {
+      const generator = utils.createDefaultGenerator(['firstname', 'lastname']);
+
+      beforeEach(() => {
+        doc = new Model({ firstname: 'Salvador Felipe Jacinto Dalí y', lastname: 'Domenech' });
+      });
+
+      it('generates uncut slug', () => {
+        expect(generator(doc, 0)).toEqual('salvador-felipe-jacinto-dali-y-domenech');
+      });
+
+      it('trims slug to given `maxLength` with sequence 0', () => {
+        expect(generator(doc, 0, 25)).toEqual('salvador-felipe-jacinto-d');
+      });
+
+      it('trims slug to given `maxLength` with sequence 1', () => {
+        expect(generator(doc, 1, 25)).toEqual('salvador-felipe-jacinto-2');
       });
     });
 
@@ -463,6 +489,74 @@ describe('slugger', () => {
           expect(e).toBeInstanceOf(slugger.SluggerError);
           expect((e as slugger.SluggerError).message).toEqual("Already attempted slug 'john' before. Giving up.");
         }
+      });
+    });
+
+    describe('generating slugs with `maxlength` on schema', () => {
+      let Model3: mongoose.Model<MyDocument>;
+      let sluggerOptions3: slugger.SluggerOptions<MyDocument>;
+
+      beforeAll(() => {
+        const schema3 = new mongoose.Schema({
+          firstname: String,
+          slug: { type: String, maxlength: 25 }
+        });
+
+        schema3.index({ slug: 1 }, { name: 'slug', unique: true });
+
+        sluggerOptions3 = new slugger.SluggerOptions<MyDocument>({
+          slugPath: 'slug',
+          generateFrom: 'firstname',
+          index: 'slug'
+        });
+
+        schema3.plugin(slugger.plugin, sluggerOptions3);
+
+        Model3 = mongoose.model<MyDocument>('SlugModel3', schema3);
+        Model3 = slugger.wrap(Model3);
+      });
+
+      it('shortens slugs to `maxlength`', async () => {
+        const doc = await Model3.create({
+          firstname: 'Salvador Felipe Jacinto Dalí y',
+          lastname: 'Domenech'
+        } as any);
+        expect(doc.slug).toHaveLength(25);
+        expect(doc.slug).toEqual('salvador-felipe-jacinto-d');
+      });
+    });
+
+    describe('generate slugs with `maxLength` on options', () => {
+      let Model4: mongoose.Model<MyDocument>;
+
+      beforeAll(() => {
+        const schema4 = new mongoose.Schema({
+          firstname: String,
+          slug: { type: String, maxlength: 50 }
+        });
+
+        schema4.index({ slug: 1 }, { name: 'slug', unique: true });
+
+        const sluggerOptions4 = new slugger.SluggerOptions<MyDocument>({
+          slugPath: 'slug',
+          generateFrom: 'firstname',
+          index: 'slug',
+          maxLength: 25
+        });
+
+        schema4.plugin(slugger.plugin, sluggerOptions4);
+
+        Model4 = mongoose.model<MyDocument>('SlugModel4', schema4);
+        Model4 = slugger.wrap(Model4);
+      });
+
+      it('shortens slugs to `maxlength`', async () => {
+        const doc = await Model4.create({
+          firstname: 'Salvador Felipe Jacinto Dalí y',
+          lastname: 'Domenech'
+        } as any);
+        expect(doc.slug).toHaveLength(25);
+        expect(doc.slug).toEqual('salvador-felipe-jacinto-d');
       });
     });
   });
