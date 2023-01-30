@@ -78,6 +78,7 @@ export class SluggerOptions<D extends Document> {
   readonly index: string;
   readonly maxAttempts?: number;
   readonly maxLength?: number;
+  readonly source?: string;
   constructor(init: SluggerInitOptions<D>) {
     if (!init) {
       throw new Error('config is missing.');
@@ -104,6 +105,7 @@ export class SluggerOptions<D extends Document> {
     if (typeof init.generateFrom === 'function') {
       this.generator = init.generateFrom;
     } else if (typeof init.generateFrom === 'string' || Array.isArray(init.generateFrom)) {
+      this.source = typeof init.generateFrom === 'string' ? init.generateFrom : undefined;
       this.generator = utils.createDefaultGenerator(init.generateFrom);
     } else {
       throw new Error('`generateFrom` must be a string, array, or function.');
@@ -190,6 +192,9 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
       this[utils.attachmentPropertyName] = slugAttachment;
     }
     if (slugAttachment) {
+      if (options.source) {
+        maxlength = /^organizer-[a-zA-Z0-9]{24}$/.test(this.get(options.source)) ? 0 : maxlength;
+      }
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length, maxlength));
     }
