@@ -162,7 +162,8 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
   }
 
   // make sure the specified index exists
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/ban-ts-comment
+  // @ts-ignore Yes, this is a 2d array, the types are lying!
   const indices: any[][] = schema.indexes();
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const index = indices.find(entry => entry.length > 1 && entry[1].name === options.index);
