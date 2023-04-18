@@ -3,7 +3,6 @@ import * as slugger from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
 import limax from 'limax';
 import fs from 'fs';
-import path from 'path';
 import { MongoError } from 'mongodb';
 
 interface MyDocument extends mongoose.Document {
@@ -564,21 +563,6 @@ describe('slugger', () => {
       expect(utils.extractIndexNameFromError('foo')).toBeUndefined();
     });
 
-    describe('checking storage engine', () => {
-      it('throws error with `ephemeralForTest`', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const status = await readJson(path.join(__dirname, '__data/status_ephemeralForTest.json'));
-        expect(() => utils.checkStorageEngineStatus(status)).toThrowError(
-          "Storage Engine is set to 'ephemeralForTest', but only 'wiredTiger' is supported at the moment."
-        );
-      });
-      it('throws no error with `wiredTiger`', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const status = await readJson(path.join(__dirname, '__data/status_wiredTiger.json'));
-        expect(() => utils.checkStorageEngineStatus(status)).not.toThrowError();
-      });
-    });
-
     it('limax character mapping', () => {
       const unmappedCharacters: string[] = [];
       for (let idx = 0; idx < 65535; idx++) {
@@ -592,9 +576,3 @@ describe('slugger', () => {
     });
   });
 });
-
-async function readJson(path: string): Promise<any> {
-  const jsonString = await fs.promises.readFile(path, 'utf8');
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return JSON.parse(jsonString);
-}

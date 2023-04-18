@@ -2,7 +2,6 @@ import { Document, Schema, SaveOptions } from 'mongoose';
 import { MongoError } from 'mongodb';
 import * as slugger from './slugger';
 import limax from 'limax';
-import * as mongodb from 'mongodb';
 
 // internal utilities which are not meant to belong to the API
 
@@ -88,21 +87,4 @@ export function getSluggerPlugins(schema: Schema): any[] {
 function isMongoError(e: any): e is MongoError {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   return typeof e.name === 'string' && ['MongoError', 'BulkWriteError'].includes(e.name);
-}
-
-export async function checkStorageEngine(db: mongodb.Db): Promise<void> {
-  checkStorageEngineStatus(await db.admin().serverStatus());
-}
-
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function checkStorageEngineStatus(status: any): void {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  if (!status.storageEngine || !status.storageEngine.name) {
-    throw new Error('status.storageEngine is missing');
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  const name = status.storageEngine.name as string;
-  if (name !== 'wiredTiger') {
-    throw new Error(`Storage Engine is set to '${name}', but only 'wiredTiger' is supported at the moment.`);
-  }
 }
