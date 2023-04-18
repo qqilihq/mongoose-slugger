@@ -375,7 +375,7 @@ describe('slugger', () => {
         );
       });
 
-      it.only('correctly propagates error which is caused by duplicate on different index', async () => {
+      it('correctly propagates error which is caused by duplicate on different index', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', email: 'john@example.com' } as any);
         await expect(
           Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any)

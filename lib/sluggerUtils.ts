@@ -95,6 +95,23 @@ export async function checkMongoDB(db: mongodb.Db): Promise<void> {
   checkMongoDBVersion(await db.admin().serverStatus());
 }
 
+/**
+ * We require at least MongoDB 4.2.0, because older versions do
+ * not deliver consistent messages (across storage engines `wiredTiger`
+ * and `ephemeralForTest`) for duplicate key errors on which we depend.
+ *
+ * We tested the following versions using the test named
+ * “correctly propagates error which is caused by duplicate on different index”:
+ *
+ * * 3.6.23 - inconsistent
+ * * 4.0.0 - inconsistent
+ * * 4.0.28 - inconsistent
+ * * 4.2.0 - OK!
+ * * 5.0.16 - OK!
+ * * 6.0.5 - OK!
+ *
+ * @param status The status object which contains a version property.
+ */
 export function checkMongoDBVersion(status: unknown): void {
   if (status == null || typeof status !== 'object') {
     throw new Error('`status` is null or not an object');
