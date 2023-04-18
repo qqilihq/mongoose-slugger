@@ -2,6 +2,8 @@ import { Document, Schema, SaveOptions } from 'mongoose';
 import { MongoError } from 'mongodb';
 import * as slugger from './slugger';
 import limax from 'limax';
+import * as mongodb from 'mongodb';
+import * as semver from 'semver';
 
 // internal utilities which are not meant to belong to the API
 
@@ -87,4 +89,24 @@ export function getSluggerPlugins(schema: Schema): any[] {
 function isMongoError(e: any): e is MongoError {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   return typeof e.name === 'string' && ['MongoError', 'BulkWriteError'].includes(e.name);
+}
+
+export async function checkMongoDB(db: mongodb.Db): Promise<void> {
+  checkMongoDBVersion(await db.admin().serverStatus());
+}
+
+export function checkMongoDBVersion(status: unknown): void {
+  if (status == null || typeof status !== 'object') {
+    throw new Error('`status` is null or not an object');
+  }
+  if (!('version' in status)) {
+    throw new Error('`status.version` is missing');
+  }
+  const version = status.version;
+  if (typeof version !== 'string') {
+    throw new Error('`status.version` is not a string');
+  }
+  if (semver.lt(version, '4.2.0')) {
+    throw new Error(`At least MongoDB version 4.2.0 is required, actual version is ${version}`);
+  }
 }
