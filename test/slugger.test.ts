@@ -228,14 +228,16 @@ describe('slugger', () => {
 
     // mongoose.set('debug', true);
 
-    beforeAll(() =>
-      mongoose.connect(process.env.MONGO_URL as string, {
+    beforeAll(async () => {
+      await mongoose.connect(process.env.MONGO_URL as string, {
         connectTimeoutMS: 30 * 1000 /* 30 seconds */,
         useNewUrlParser: true,
         useCreateIndex: true,
         useUnifiedTopology: true
-      })
-    );
+      });
+      await Model.ensureIndexes();
+    });
+
     beforeEach(() =>
       Promise.all(mongoose.modelNames().map(modelName => mongoose.model(modelName).deleteMany({}).exec()))
     );
