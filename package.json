@@ -26,7 +26,8 @@
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf ./coverage ./dist",
     "preversion": "run-s clean lint test build",
-    "pretest": "cross-env MONGOMS_DISABLE_POSTINSTALL=false node ./node_modules/mongodb-memory-server-global/postinstall.js"
+    "pretest": "cross-env MONGOMS_DISABLE_POSTINSTALL=false node ./node_modules/mongodb-memory-server-global/postinstall.js",
+    "prepare": "husky install"
   },
   "dependencies": {
     "limax": "^3.0.0",
@@ -44,7 +45,7 @@
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "husky": "^4.3.0",
+    "husky": "^8.0.3",
     "jest": "^29.5.0",
     "jest-junit": "^16.0.0",
     "mongodb-memory-server-global": "^8.10.2",
