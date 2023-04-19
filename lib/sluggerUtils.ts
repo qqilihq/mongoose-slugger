@@ -3,6 +3,7 @@ import { MongoError } from 'mongodb';
 import * as slugger from './slugger';
 import limax from 'limax';
 import * as mongodb from 'mongodb';
+import * as semver from 'semver';
 
 // internal utilities which are not meant to belong to the API
 
@@ -85,24 +86,46 @@ export function getSluggerPlugins(schema: Schema): any[] {
   return (schema as any).plugins.filter((p: any) => p.fn === slugger.plugin);
 }
 
-function isMongoError(e: any): e is MongoError {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  return typeof e.name === 'string' && ['MongoError', 'BulkWriteError'].includes(e.name);
+function isMongoError(e: unknown): e is MongoError {
+  if (e == null || typeof e !== 'object') return false;
+  if (!('name' in e)) return false;
+  if (typeof e.name !== 'string') return false;
+  return ['MongoError', 'BulkWriteError'].includes(e.name);
 }
 
-export async function checkStorageEngine(db: mongodb.Db): Promise<void> {
-  checkStorageEngineStatus(await db.admin().serverStatus());
+export async function checkMongoDB(db: mongodb.Db): Promise<void> {
+  checkMongoDBVersion(await db.admin().serverStatus());
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function checkStorageEngineStatus(status: any): void {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  if (!status.storageEngine || !status.storageEngine.name) {
-    throw new Error('status.storageEngine is missing');
+/**
+ * We require at least MongoDB 4.2.0, because older versions do
+ * not deliver consistent messages (across storage engines `wiredTiger`
+ * and `ephemeralForTest`) for duplicate key errors on which we depend.
+ *
+ * We tested the following versions using the test named
+ * “correctly propagates error which is caused by duplicate on different index”:
+ *
+ * * 3.6.23 - inconsistent
+ * * 4.0.0 - inconsistent
+ * * 4.0.28 - inconsistent
+ * * 4.2.0 - OK!
+ * * 5.0.16 - OK!
+ * * 6.0.5 - OK!
+ *
+ * @param status The status object which contains a version property.
+ */
+export function checkMongoDBVersion(status: unknown): void {
+  if (status == null || typeof status !== 'object') {
+    throw new Error('`status` is null or not an object');
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  const name = status.storageEngine.name as string;
-  if (name !== 'wiredTiger') {
-    throw new Error(`Storage Engine is set to '${name}', but only 'wiredTiger' is supported at the moment.`);
+  if (!('version' in status)) {
+    throw new Error('`status.version` is missing');
+  }
+  const version = status.version;
+  if (typeof version !== 'string') {
+    throw new Error('`status.version` is not a string');
+  }
+  if (semver.lt(version, '4.2.0')) {
+    throw new Error(`At least MongoDB version 4.2.0 is required, actual version is ${version}`);
   }
 }

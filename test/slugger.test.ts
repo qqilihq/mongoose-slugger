@@ -3,7 +3,6 @@ import * as slugger from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
 import limax from 'limax';
 import fs from 'fs';
-import path from 'path';
 import { MongoError } from 'mongodb';
 
 interface MyDocument extends mongoose.Document {
@@ -71,6 +70,7 @@ describe('slugger', () => {
     });
 
     it('throws error when neither `generateFrom` is given', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       expect(() => new slugger.SluggerOptions({ index: 'slug' } as any)).toThrowError(/`generateFrom` is missing./);
     });
 
@@ -229,14 +229,16 @@ describe('slugger', () => {
 
     // mongoose.set('debug', true);
 
-    beforeAll(() =>
-      mongoose.connect(process.env.MONGO_URL as string, {
+    beforeAll(async () => {
+      await mongoose.connect(process.env.MONGO_URL as string, {
         connectTimeoutMS: 30 * 1000 /* 30 seconds */,
         useNewUrlParser: true,
         useCreateIndex: true,
         useUnifiedTopology: true
-      })
-    );
+      });
+      await Model.ensureIndexes();
+    });
+
     beforeEach(() =>
       Promise.all(mongoose.modelNames().map(modelName => mongoose.model(modelName).deleteMany({}).exec()))
     );
@@ -392,13 +394,11 @@ describe('slugger', () => {
       });
 
       it('generates slug', done => {
-        void new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' } as any).save(
-          (err, product) => {
-            expect(err).toBeUndefined();
-            expect(product).toBeInstanceOf(Object);
-            done();
-          }
-        );
+        void new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' }).save((err, product) => {
+          expect(err).toBeUndefined();
+          expect(product).toBeInstanceOf(Object);
+          done();
+        });
       });
 
       it('generates another slug in case of a conflict', done => {
@@ -408,7 +408,7 @@ describe('slugger', () => {
           city: 'memphis',
           country: 'usa',
           email: 'john@example.com'
-        } as any).save(err => {
+        }).save(err => {
           if (err) {
             done(err);
             return;
@@ -432,12 +432,12 @@ describe('slugger', () => {
       });
 
       it('propagates error which is caused by duplicate on different index', done => {
-        void new Model({ firstname: 'john', lastname: 'doe', email: 'john@example.com' } as any).save(err => {
+        void new Model({ firstname: 'john', lastname: 'doe', email: 'john@example.com' }).save(err => {
           if (err) {
             done(err);
             return;
           }
-          void new Model({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any).save(err => {
+          void new Model({ firstname: 'john', lastname: 'dope', email: 'john@example.com' }).save(err => {
             expect(err).toBeInstanceOf(Object);
             expect((err as MongoError).code).toEqual(11000);
             done();
@@ -565,17 +565,22 @@ describe('slugger', () => {
     });
 
     describe('checking storage engine', () => {
-      it('throws error with `ephemeralForTest`', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const status = await readJson(path.join(__dirname, '__data/status_ephemeralForTest.json'));
-        expect(() => utils.checkStorageEngineStatus(status)).toThrowError(
-          "Storage Engine is set to 'ephemeralForTest', but only 'wiredTiger' is supported at the moment."
+      it('succeeds with proper version', () => {
+        expect(() => utils.checkMongoDBVersion({ version: '4.2.0' })).not.toThrow();
+      });
+      it('throws with too old version', () => {
+        expect(() => utils.checkMongoDBVersion({ version: '4.0.28' })).toThrowError(
+          'At least MongoDB version 4.2.0 is required, actual version is 4.0.28'
         );
       });
-      it('throws no error with `wiredTiger`', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const status = await readJson(path.join(__dirname, '__data/status_wiredTiger.json'));
-        expect(() => utils.checkStorageEngineStatus(status)).not.toThrowError();
+      it('throws on null argument', () => {
+        expect(() => utils.checkMongoDBVersion(null)).toThrowError('`status` is null or not an object');
+      });
+      it('throws on missing version property', () => {
+        expect(() => utils.checkMongoDBVersion({})).toThrowError('`status.version` is missing');
+      });
+      it('throws if version is not string', () => {
+        expect(() => utils.checkMongoDBVersion({ version: 1 })).toThrowError('`status.version` is not a string');
       });
     });
 
@@ -592,9 +597,3 @@ describe('slugger', () => {
     });
   });
 });
-
-async function readJson(path: string): Promise<any> {
-  const jsonString = await fs.promises.readFile(path, 'utf8');
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return JSON.parse(jsonString);
-}

@@ -223,8 +223,8 @@ export function wrap<M extends Model<any>>(model: M): M {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   model.prototype[utils.delegatedSaveFunction] = model.prototype.save;
 
-  // only check the storage engine *once* on first call
-  let hasCheckedStorageEngine = false;
+  // only check the DB version *once* on first call
+  let hasCheckedMongoDB = false;
 
   // @ts-expect-error ignore “TS7030: Not all code paths return a value.”
   // this is fine, as we’re following Mongoose’s API here
@@ -238,11 +238,12 @@ export function wrap<M extends Model<any>>(model: M): M {
 
     let promise: Promise<any> = Promise.resolve();
 
-    if (!hasCheckedStorageEngine) {
-      promise = promise.then(() => utils.checkStorageEngine(model.db.db));
-      hasCheckedStorageEngine = true;
+    if (!hasCheckedMongoDB) {
+      promise = promise.then(() => utils.checkMongoDB(model.db.db));
+      hasCheckedMongoDB = true;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     promise = promise.then(() => utils.saveSlugWithRetries(this, sluggerOptions, saveOptions));
 
     if (!fn) {
