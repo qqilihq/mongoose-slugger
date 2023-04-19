@@ -3,7 +3,6 @@ import * as slugger from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
 import limax from 'limax';
 import fs from 'fs';
-// import path from 'path';
 import { MongoError } from 'mongodb';
 
 interface MyDocument extends mongoose.Document {
@@ -566,20 +565,25 @@ describe('slugger', () => {
       expect(utils.extractIndexNameFromError('foo')).toBeUndefined();
     });
 
-    // describe('checking storage engine', () => {
-    //   it('throws error with `ephemeralForTest`', async () => {
-    //     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    //     const status = await readJson(path.join(__dirname, '__data/status_ephemeralForTest.json'));
-    //     expect(() => utils.checkStorageEngineStatus(status)).toThrowError(
-    //       "Storage Engine is set to 'ephemeralForTest', but only 'wiredTiger' is supported at the moment."
-    //     );
-    //   });
-    //   it('throws no error with `wiredTiger`', async () => {
-    //     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    //     const status = await readJson(path.join(__dirname, '__data/status_wiredTiger.json'));
-    //     expect(() => utils.checkStorageEngineStatus(status)).not.toThrowError();
-    //   });
-    // });
+    describe('checking storage engine', () => {
+      it('succeeds with proper version', () => {
+        expect(() => utils.checkMongoDBVersion({ version: '4.2.0' })).not.toThrow();
+      });
+      it('throws with too old version', () => {
+        expect(() => utils.checkMongoDBVersion({ version: '4.0.28' })).toThrowError(
+          'At least MongoDB version 4.2.0 is required, actual version is 4.0.28'
+        );
+      });
+      it('throws on null argument', () => {
+        expect(() => utils.checkMongoDBVersion(null)).toThrowError('`status` is null or not an object');
+      });
+      it('throws on missing version property', () => {
+        expect(() => utils.checkMongoDBVersion({})).toThrowError('`status.version` is missing');
+      });
+      it('throws if version is not string', () => {
+        expect(() => utils.checkMongoDBVersion({ version: 1 })).toThrowError('`status.version` is not a string');
+      });
+    });
 
     it('limax character mapping', () => {
       const unmappedCharacters: string[] = [];
@@ -594,9 +598,3 @@ describe('slugger', () => {
     });
   });
 });
-
-// async function readJson(path: string): Promise<any> {
-//   const jsonString = await fs.promises.readFile(path, 'utf8');
-//   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-//   return JSON.parse(jsonString);
-// }
