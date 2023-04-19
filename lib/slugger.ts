@@ -243,6 +243,7 @@ export function wrap<M extends Model<any>>(model: M): M {
       hasCheckedMongoDB = true;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     promise = promise.then(() => utils.saveSlugWithRetries(this, sluggerOptions, saveOptions));
 
     if (!fn) {

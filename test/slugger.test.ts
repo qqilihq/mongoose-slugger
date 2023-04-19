@@ -70,6 +70,7 @@ describe('slugger', () => {
     });
 
     it('throws error when neither `generateFrom` is given', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       expect(() => new slugger.SluggerOptions({ index: 'slug' } as any)).toThrowError(/`generateFrom` is missing./);
     });
 
@@ -393,13 +394,11 @@ describe('slugger', () => {
       });
 
       it('generates slug', done => {
-        void new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' } as any).save(
-          (err, product) => {
-            expect(err).toBeUndefined();
-            expect(product).toBeInstanceOf(Object);
-            done();
-          }
-        );
+        void new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' }).save((err, product) => {
+          expect(err).toBeUndefined();
+          expect(product).toBeInstanceOf(Object);
+          done();
+        });
       });
 
       it('generates another slug in case of a conflict', done => {
@@ -409,7 +408,7 @@ describe('slugger', () => {
           city: 'memphis',
           country: 'usa',
           email: 'john@example.com'
-        } as any).save(err => {
+        }).save(err => {
           if (err) {
             done(err);
             return;
@@ -433,12 +432,12 @@ describe('slugger', () => {
       });
 
       it('propagates error which is caused by duplicate on different index', done => {
-        void new Model({ firstname: 'john', lastname: 'doe', email: 'john@example.com' } as any).save(err => {
+        void new Model({ firstname: 'john', lastname: 'doe', email: 'john@example.com' }).save(err => {
           if (err) {
             done(err);
             return;
           }
-          void new Model({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any).save(err => {
+          void new Model({ firstname: 'john', lastname: 'dope', email: 'john@example.com' }).save(err => {
             expect(err).toBeInstanceOf(Object);
             expect((err as MongoError).code).toEqual(11000);
             done();
