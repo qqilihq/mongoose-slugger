@@ -34,7 +34,7 @@
     "semver": "^7.5.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "^13.1.0",
+    "@commitlint/cli": "^17.6.1",
     "@shelf/jest-mongodb": "^4.1.7",
     "@types/jest": "^29.5.1",
     "@types/node": "^12",
