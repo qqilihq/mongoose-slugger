@@ -162,15 +162,13 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
   }
 
   // make sure the specified index exists
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/ban-ts-comment
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore Yes, this is a 2d array, the types are lying!
   const indices: any[][] = schema.indexes();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const index = indices.find(entry => entry.length > 1 && entry[1].name === options.index);
   if (!index) {
     throw new Error(`schema contains no index with name '${options.index}'.`);
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (!index[1].unique) {
     throw new Error(`the index '${options.index}' is not unique.`);
   }
@@ -180,18 +178,14 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
   }
 
   schema.pre('validate', function (this: any, next) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     let slugAttachment = this[utils.attachmentPropertyName] as utils.SlugDocumentAttachment;
     // only generate/retry slugs, when no slug
     // is explicitly given in the document
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     if (!slugAttachment && this.get(options.slugPath) == null) {
       slugAttachment = new utils.SlugDocumentAttachment();
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       this[utils.attachmentPropertyName] = slugAttachment;
     }
     if (slugAttachment) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length, maxlength));
     }
     next();
@@ -214,13 +208,11 @@ export function wrap<M extends Model<any>>(model: M): M {
   if (plugins.length === 0) {
     throw new Error('slugger was not added to this model’s schema.');
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const sluggerOptions = plugins[0].opts;
   if (!(sluggerOptions instanceof SluggerOptions)) {
     throw new Error('attached `opts` are not of type SluggerOptions.');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   model.prototype[utils.delegatedSaveFunction] = model.prototype.save;
 
   // only check the DB version *once* on first call
@@ -228,10 +220,8 @@ export function wrap<M extends Model<any>>(model: M): M {
 
   // @ts-expect-error ignore “TS7030: Not all code paths return a value.”
   // this is fine, as we’re following Mongoose’s API here
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   model.prototype.save = function (saveOptions: any, fn: any) {
     if (typeof saveOptions === 'function') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       fn = saveOptions;
       saveOptions = undefined;
     }
@@ -252,9 +242,7 @@ export function wrap<M extends Model<any>>(model: M): M {
 
     // nb: don't do then().catch() -- https://stackoverflow.com/a/40642436
     promise.then(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
       result => fn(undefined, result),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
       reason => fn(reason)
     );
   };

@@ -22,13 +22,11 @@ export async function saveSlugWithRetries<D extends Document>(
 ): Promise<D> {
   for (;;) {
     try {
-      // eslint-disable-next-line @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       const saveFunction = (document as any)[delegatedSaveFunction] || document.save;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
       return await saveFunction.call(document, saveOptions);
     } catch (e) {
       if (isMongoError(e)) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const slugAttachment = (document as any)[attachmentPropertyName] as SlugDocumentAttachment;
         if (
           slugAttachment &&
@@ -87,7 +85,6 @@ export function extractIndexNameFromError(msg: string): string | undefined {
 
 /** Gets all Slugger plugins which are assigned to the given schema. */
 export function getSluggerPlugins(schema: Schema): any[] {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   return (schema as any).plugins.filter((p: any) => p.fn === slugger.plugin);
 }
 
