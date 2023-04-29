@@ -497,24 +497,16 @@ describe('slugger', () => {
 
       it('throws when same slugs are generated within one save cycle using `Model.create`', async () => {
         await Model2.create({ firstname: 'john' });
-        try {
-          await expect(() => Model2.create({ firstname: 'john' })).rejects.toThrow();
-        } catch (e) {
-          expect(e).toBeInstanceOf(slugger.SluggerError);
-          expect((e as slugger.SluggerError).message).toEqual("Already attempted slug 'john' before. Giving up.");
-        }
+        await expect(() => Model2.create({ firstname: 'john' })).rejects.toThrowError(
+          new slugger.SluggerError("Already attempted slug 'john' 3 times before. Giving up.")
+        );
       });
 
       it('throws when same slugs are generated within one save cycle using `document.save`', async () => {
         await Model2.create({ firstname: 'john' });
-        try {
-          await expect(() => new Model2({ firstname: 'john' }).save()).rejects.toThrow();
-        } catch (e) {
-          expect(e).toBeInstanceOf(slugger.SluggerError);
-          expect((e as slugger.SluggerError).message).toEqual(
-            "Already attempted slug 'john' 3 times before. Giving up."
-          );
-        }
+        await expect(() => new Model2({ firstname: 'john' }).save()).rejects.toThrowError(
+          new slugger.SluggerError("Already attempted slug 'john' 3 times before. Giving up.")
+        );
       });
     });
 
