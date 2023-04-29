@@ -320,7 +320,7 @@ describe('slugger', () => {
       });
     });
 
-    describe('promises', () => {
+    describe('promises using `Model.create`', () => {
       it('generates slug', async () => {
         const doc = await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' } as any);
         expect(doc.slug).toEqual('john-doe');
@@ -388,6 +388,27 @@ describe('slugger', () => {
       });
 
       it.todo('correctly propagates error which is not caused by duplicate keys');
+    });
+
+    describe('promises using `document.save`', () => {
+      it('generates another slug in case of a conflict', async () => {
+        await Model.create({
+          firstname: 'john',
+          lastname: 'doe',
+          city: 'memphis',
+          country: 'usa',
+          email: 'john@example.com'
+        } as any);
+        const doc2 = new Model({
+          firstname: 'john',
+          lastname: 'doe',
+          city: 'memphis',
+          country: 'usa',
+          email: 'john2@example.com'
+        } as any);
+        await doc2.save();
+        expect(doc2.slug).toEqual('john-doe-2');
+      });
     });
 
     describe('callbacks', () => {
@@ -474,10 +495,20 @@ describe('slugger', () => {
         await Model2.ensureIndexes();
       });
 
-      it('throws when same slugs are generated within one save cycle', async () => {
+      it('throws when same slugs are generated within one save cycle using `Model.create`', async () => {
         await Model2.create({ firstname: 'john' } as any);
         try {
-          await expect(await Model2.create({ firstname: 'john' } as any)).rejects.toThrow();
+          await expect(() => Model2.create({ firstname: 'john' } as any)).rejects.toThrow();
+        } catch (e) {
+          expect(e).toBeInstanceOf(slugger.SluggerError);
+          expect((e as slugger.SluggerError).message).toEqual("Already attempted slug 'john' before. Giving up.");
+        }
+      });
+
+      it('throws when same slugs are generated within one save cycle using `document.save`', async () => {
+        await Model2.create({ firstname: 'john' } as any);
+        try {
+          await expect(() => new Model2({ firstname: 'john' }).save()).rejects.toThrow();
         } catch (e) {
           expect(e).toBeInstanceOf(slugger.SluggerError);
           expect((e as slugger.SluggerError).message).toEqual(
