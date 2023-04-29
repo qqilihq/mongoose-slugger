@@ -95,7 +95,8 @@ function isMongoError(e: unknown): e is MongoError {
   if (e == null || typeof e !== 'object') return false;
   if (!('name' in e)) return false;
   if (typeof e.name !== 'string') return false;
-  return ['MongoError', 'BulkWriteError'].includes(e.name);
+  // Mongoose 6+ uses `MongoServerError`: https://mongoosejs.com/docs/migrating_to_6.html#mongoerror-is-now-mongoservererror
+  return ['MongoError', 'BulkWriteError', 'MongoServerError'].includes(e.name);
 }
 
 export async function checkMongoDB(db: mongodb.Db): Promise<void> {
