@@ -259,5 +259,9 @@ export function wrap<M extends Model<any>>(model: M): M {
     );
   };
 
+  // Since Mongoose 6 there’s `$save` which is mostly used instead of `save`
+  // https://github.com/Automattic/mongoose/commit/0270b515580eaccbc71b6fbf4af2fa8d2ee10471
+  model.prototype.$save = model.prototype.save;
+
   return model;
 }
