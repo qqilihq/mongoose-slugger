@@ -37,9 +37,12 @@ export async function saveSlugWithRetries<D extends Document>(
           extractIndexNameFromError(e.message) === sluggerOptions.index
         ) {
           const attemptedSlug = document.get(sluggerOptions.slugPath) as string;
+          const attemptCount = slugAttachment.slugAttempts.filter(slug => slug === attemptedSlug).length;
 
-          if (slugAttachment.slugAttempts.includes(attemptedSlug)) {
-            throw new slugger.SluggerError(`Already attempted slug '${attemptedSlug}' before. Giving up.`);
+          if (attemptCount >= 3) {
+            throw new slugger.SluggerError(
+              `Already attempted slug '${attemptedSlug}' ${attemptCount} times before. Giving up.`
+            );
           }
 
           slugAttachment.slugAttempts.push(attemptedSlug);
@@ -64,21 +67,16 @@ export function createDefaultGenerator(paths: string | string[]): slugger.Genera
     const values = ([] as string[]).concat(paths).map(path => doc.get(path) as string);
     // replace underscore with hyphen
     const slug = limax(values.join('-'), { custom: { _: '-' } });
-    let indexSuffix = attempt;
-    // if the slug ends with “hyphen + numeric index”, use numeric index as base,
-    // and do not attempt any lower numbers at all
-    const match = /.*-(\d+)$/.exec(slug);
-    if (match?.[1]) {
-      indexSuffix += parseInt(match[1], 10) - 1;
+    const suffix = attempt > 0 ? `-${attempt + 1}` : '';
+    let trimmedSlug = slug;
+    if (typeof maxLength === 'number') {
+      trimmedSlug = trimmedSlug
+        .substring(0, maxLength - suffix.length)
+        // prevent that we end up with a double hyphen
+        .replace(/-$/, '');
     }
-    const suffix = indexSuffix > 0 ? `-${indexSuffix + 1}` : '';
-    return (maxLength ? trimSlug(slug, maxLength - suffix.length) : slug) + suffix;
+    return trimmedSlug + suffix;
   };
-}
-
-export function trimSlug(slug: string, maxLength?: number): string {
-  const trimmedSlug = slug.substring(0, maxLength);
-  return trimmedSlug.lastIndexOf('-') + 1 === trimmedSlug.length ? trimmedSlug.slice(0, -1) : trimmedSlug;
 }
 
 export function extractIndexNameFromError(msg: string): string | undefined {
