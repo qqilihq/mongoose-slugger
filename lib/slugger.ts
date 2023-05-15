@@ -57,7 +57,7 @@ export interface SluggerInitOptions<D extends Document> {
    * The number of attempts to generate a slug before failing.
    * In this case, a `SluggerError` will be thrown.
    *
-   * In case the value is not specified, there is **not** limit of
+   * In case the value is not specified, there is **no** limit of
    * attempts, i.e. the slug generating logic will potentially run
    * forever.
    */

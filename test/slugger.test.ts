@@ -551,6 +551,51 @@ describe('slugger', () => {
         expect(doc.slug).toEqual('salvador-felipe-jacinto-d');
       });
     });
+
+    /** https://lineupr.sentry.io/issues/4184297415 */
+    describe('generate slugs throws “Already attempted slug” error', () => {
+      let Model5: mongoose.Model<MyDocument>;
+
+      beforeAll(async () => {
+        const schema5 = new mongoose.Schema({
+          name: String,
+          slug: String
+        });
+
+        schema5.index({ slug: 1 }, { name: 'slug', unique: true });
+
+        const sluggerOptions5 = new slugger.SluggerOptions<MyDocument>({
+          slugPath: 'slug',
+          generateFrom: 'name',
+          index: 'slug',
+          maxLength: 10
+        });
+
+        schema5.plugin(slugger.plugin, sluggerOptions5);
+
+        Model5 = mongoose.model<MyDocument>('SlugModel5', schema5);
+        Model5 = slugger.wrap(Model5);
+        await Model5.ensureIndexes();
+      });
+
+      it('inserts sequentially numbered documents', async () => {
+        const doc = await Model5.create({ name: 'Document 24' });
+        expect(doc.slug).toEqual('documen-24');
+
+        // throws: Already attempted slug 'document-2' before. Giving up.
+        const doc2 = await Model5.create({ name: 'Document 25' });
+        expect(doc2.slug).toEqual('documen-25');
+
+        const doc3 = await Model5.create({ name: 'Document 24' });
+        expect(doc3.slug).toEqual('documen-26');
+
+        const doc4 = await Model5.create({ name: 'Document 1' });
+        expect(doc4.slug).toEqual('document-1');
+
+        const doc5 = await Model5.create({ name: 'Document 1' });
+        expect(doc5.slug).toEqual('document-2');
+      });
+    });
   });
 
   describe('utilities', () => {
