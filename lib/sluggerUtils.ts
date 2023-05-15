@@ -64,7 +64,14 @@ export function createDefaultGenerator(paths: string | string[]): slugger.Genera
     const values = ([] as string[]).concat(paths).map(path => doc.get(path) as string);
     // replace underscore with hyphen
     const slug = limax(values.join('-'), { custom: { _: '-' } });
-    const suffix = attempt > 0 ? `-${attempt + 1}` : '';
+    let indexSuffix = attempt;
+    // if the slug ends with “hyphen + numeric index”, use numeric index as base,
+    // and do not attempt any lower numbers at all
+    const match = /.*-(\d+)$/.exec(slug);
+    if (match?.[1]) {
+      indexSuffix += parseInt(match[1], 10) - 1;
+    }
+    const suffix = indexSuffix > 0 ? `-${indexSuffix + 1}` : '';
     return (maxLength ? trimSlug(slug, maxLength - suffix.length) : slug) + suffix;
   };
 }

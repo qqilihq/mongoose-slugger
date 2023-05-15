@@ -580,11 +580,20 @@ describe('slugger', () => {
 
       it('inserts sequentially numbered documents', async () => {
         const doc = await Model5.create({ name: 'Document 24' });
-        expect(doc.slug).toEqual('document-2');
+        expect(doc.slug).toEqual('documen-24');
 
         // throws: Already attempted slug 'document-2' before. Giving up.
         const doc2 = await Model5.create({ name: 'Document 25' });
-        expect(doc2.slug).toEqual('document-3'); // or anything else
+        expect(doc2.slug).toEqual('documen-25');
+
+        const doc3 = await Model5.create({ name: 'Document 24' });
+        expect(doc3.slug).toEqual('documen-26');
+
+        const doc4 = await Model5.create({ name: 'Document 1' });
+        expect(doc4.slug).toEqual('document-1');
+
+        const doc5 = await Model5.create({ name: 'Document 1' });
+        expect(doc5.slug).toEqual('document-2');
       });
     });
   });
