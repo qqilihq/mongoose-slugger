@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## unreleased
 
-### Fixed
+### [4.0.1] – 2023-05-15
 - Prevent error `Already attempted slug '…' before. Giving up.` which happened for strings ending in a numeric suffix
 
 ## [4.0.0] – 2023-04-28
