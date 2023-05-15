@@ -2,7 +2,7 @@
   "name": "mongoose-slugger-plugin",
   "description": "Mongoose plugin to automatically generate so called slugs (atomically)",
   "author": "Philipp Katz <philipp@philippkatz.de>",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "main": "dist/slugger.js",
   "types": "dist/slugger.d.ts",
   "license": "MIT",
