@@ -204,6 +204,10 @@ describe('slugger', () => {
       it('trims slug to given `maxLength` with sequence 1', () => {
         expect(generator(doc, 1, 25)).toEqual('salvador-felipe-jacinto-2');
       });
+
+      it('trims slug to given `maxLength` and prevents double hyphens', () => {
+        expect(generator(doc, 1, 18)).toEqual('salvador-felipe-2');
+      });
     });
 
     describe('allowed characters', () => {
@@ -477,7 +481,9 @@ describe('slugger', () => {
           await expect(await Model2.create({ firstname: 'john' } as any)).rejects.toThrow();
         } catch (e) {
           expect(e).toBeInstanceOf(slugger.SluggerError);
-          expect((e as slugger.SluggerError).message).toEqual("Already attempted slug 'john' before. Giving up.");
+          expect((e as slugger.SluggerError).message).toEqual(
+            "Already attempted slug 'john' 3 times before. Giving up."
+          );
         }
       });
     });
@@ -580,20 +586,20 @@ describe('slugger', () => {
 
       it('inserts sequentially numbered documents', async () => {
         const doc = await Model5.create({ name: 'Document 24' });
-        expect(doc.slug).toEqual('documen-24');
+        expect(doc.slug).toEqual('document-2');
 
         // throws: Already attempted slug 'document-2' before. Giving up.
         const doc2 = await Model5.create({ name: 'Document 25' });
-        expect(doc2.slug).toEqual('documen-25');
+        expect(doc2.slug).toEqual('document-3');
 
         const doc3 = await Model5.create({ name: 'Document 24' });
-        expect(doc3.slug).toEqual('documen-26');
+        expect(doc3.slug).toEqual('document-4');
 
         const doc4 = await Model5.create({ name: 'Document 1' });
         expect(doc4.slug).toEqual('document-1');
 
         const doc5 = await Model5.create({ name: 'Document 1' });
-        expect(doc5.slug).toEqual('document-2');
+        expect(doc5.slug).toEqual('document-5');
       });
     });
   });
