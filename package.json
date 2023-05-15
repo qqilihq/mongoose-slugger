@@ -22,6 +22,7 @@
   ],
   "scripts": {
     "test": "jest",
+    "test:watch": "jest --watch --coverage=false",
     "lint": "eslint --ext .ts ./lib ./test",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf ./coverage ./dist",
