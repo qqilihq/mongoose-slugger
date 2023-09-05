@@ -11,47 +11,30 @@ export const delegatedSaveFunction = Symbol('_sluggerSaveDelegate');
 
 export const attachmentPropertyName = Symbol('_sluggerAttachment');
 
-export const sluggerOptionsInstance = Symbol('_sluggerOptions');
+export const defaultSlugPath = 'slug';
 
-export class ParsedSluggerOptions<D extends Document> {
-  readonly slugPath: string;
-  readonly generator: slugger.GeneratorFunction<D>;
-  readonly index: string;
-  readonly maxAttempts?: number;
-  readonly maxLength?: number;
-  constructor(init: slugger.SluggerOptions<D>) {
-    if (!init) {
-      throw new Error('config is missing.');
-    }
-    if (!init.index) {
-      throw new Error('`index` is missing.');
-    }
-    if (!init.generateFrom) {
-      throw new Error('`generateFrom` is missing.');
-    }
-    if (typeof init.maxLength === 'number' && init.maxLength < 1) {
-      throw new Error('`maxLength` must be at least one.');
-    }
-    if (typeof init.maxAttempts === 'number' && init.maxAttempts < 1) {
-      throw new Error('`maxAttempts` must be at least one.');
-    }
-
-    this.index = init.index;
-
-    // `slug` defaults to 'slug'
-    this.slugPath = init.slugPath || 'slug';
-
-    // build generator function from `generateFrom` property
-    if (typeof init.generateFrom === 'function') {
-      this.generator = init.generateFrom;
-    } else if (typeof init.generateFrom === 'string' || Array.isArray(init.generateFrom)) {
-      this.generator = createDefaultGenerator(init.generateFrom);
-    } else {
-      throw new Error('`generateFrom` must be a string, array, or function.');
-    }
-
-    this.maxAttempts = init.maxAttempts;
-    this.maxLength = init.maxLength;
+export function validateOptions(init?: slugger.SluggerOptions<any>): asserts init is slugger.SluggerOptions<any> {
+  if (!init) {
+    throw new Error('options are missing.');
+  }
+  if (!init.index) {
+    throw new Error('`index` is missing.');
+  }
+  if (!init.generateFrom) {
+    throw new Error('`generateFrom` is missing.');
+  }
+  if (typeof init.maxLength === 'number' && init.maxLength < 1) {
+    throw new Error('`maxLength` must be at least one.');
+  }
+  if (typeof init.maxAttempts === 'number' && init.maxAttempts < 1) {
+    throw new Error('`maxAttempts` must be at least one.');
+  }
+  if (
+    typeof init.generateFrom !== 'function' &&
+    typeof init.generateFrom !== 'string' &&
+    !Array.isArray(init.generateFrom)
+  ) {
+    throw new Error('`generateFrom` must be a string, array, or function.');
   }
 }
 
@@ -61,7 +44,7 @@ export class SlugDocumentAttachment {
 
 export async function saveSlugWithRetries<D extends Document>(
   document: D,
-  sluggerOptions: ParsedSluggerOptions<D>,
+  sluggerOptions: slugger.SluggerOptions<D>,
   saveOptions?: SaveOptions
 ): Promise<D> {
   for (;;) {
@@ -78,7 +61,8 @@ export async function saveSlugWithRetries<D extends Document>(
           e.message &&
           extractIndexNameFromError(e.message) === sluggerOptions.index
         ) {
-          const attemptedSlug = document.get(sluggerOptions.slugPath) as string;
+          const slugPath = sluggerOptions.slugPath ?? defaultSlugPath;
+          const attemptedSlug = document.get(slugPath) as string;
           const attemptCount = slugAttachment.slugAttempts.filter(slug => slug === attemptedSlug).length;
 
           if (attemptCount >= 3) {

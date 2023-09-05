@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import * as slugger from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
 import limax from 'limax';
@@ -16,11 +16,12 @@ interface MyDocument extends mongoose.Document {
 describe('slugger', () => {
   mongoose.set('strictQuery', false);
 
+  let schema: Schema<any>;
   let Model: mongoose.Model<MyDocument>;
   let sluggerOptions: slugger.SluggerOptions<MyDocument>;
 
   beforeAll(() => {
-    const schema = new mongoose.Schema({
+    schema = new mongoose.Schema({
       firstname: String,
       lastname: String,
       city: String,
@@ -62,22 +63,21 @@ describe('slugger', () => {
   describe('options validation', () => {
     it('throws when creating config with missing object', () => {
       // @ts-expect-error constructor requires argument
-      expect(() => new utils.ParsedSluggerOptions()).toThrowError(/config is missing./);
+      expect(() => new utils.validateOptions()).toThrowError(/options are missing./);
     });
 
     it('throws error when configuration is missing', () => {
-      // @ts-expect-error function requires argument
-      expect(() => slugger.plugin()).toThrowError(/options are missing./);
+      expect(() => utils.validateOptions()).toThrowError(/options are missing./);
     });
 
     it('throws error when neither `generateFrom` is given', () => {
       // @ts-expect-error argument missing
-      expect(() => new utils.ParsedSluggerOptions({ index: 'slug' })).toThrowError(/`generateFrom` is missing./);
+      expect(() => new utils.validateOptions({ index: 'slug' })).toThrowError(/`generateFrom` is missing./);
     });
 
     it('throws error when index is missing', () => {
       // @ts-expect-error `index` argument is missing
-      expect(() => new utils.ParsedSluggerOptions({})).toThrowError(/`index` is missing./);
+      expect(() => new utils.validateOptions({})).toThrowError(/`index` is missing./);
     });
 
     it('throws error when specified index does not exist', () => {
@@ -119,13 +119,13 @@ describe('slugger', () => {
     });
 
     it('throws error when `maxAttempts` is less than one', () => {
-      expect(
-        () => new utils.ParsedSluggerOptions({ generateFrom: 'name', index: 'name', maxAttempts: 0 })
-      ).toThrowError(/`maxAttempts` must be at least one./);
+      expect(() => utils.validateOptions({ generateFrom: 'name', index: 'name', maxAttempts: 0 })).toThrowError(
+        /`maxAttempts` must be at least one./
+      );
     });
 
     it('throws error when `maxLength` is less than one', () => {
-      expect(() => new utils.ParsedSluggerOptions({ generateFrom: 'name', index: 'name', maxLength: 0 })).toThrowError(
+      expect(() => utils.validateOptions({ generateFrom: 'name', index: 'name', maxLength: 0 })).toThrowError(
         /`maxLength` must be at least one./
       );
     });
@@ -153,6 +153,12 @@ describe('slugger', () => {
       expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(
         /the index 'name_index' does not contain the slug path 'slug'./
       );
+    });
+
+    it('works with cloned schemas', () => {
+      const schemaClone = schema.clone();
+      const ModelClone = mongoose.model<MyDocument>('SlugModelClone', schemaClone);
+      slugger.wrap(ModelClone);
     });
   });
 
@@ -234,10 +240,7 @@ describe('slugger', () => {
 
     // mongoose.set('debug', true);
 
-    let sluggerOptionsInstance: utils.ParsedSluggerOptions<MyDocument>;
-
     beforeAll(async () => {
-      sluggerOptionsInstance = new utils.ParsedSluggerOptions(sluggerOptions);
       await mongoose.connect(process.env.MONGO_URL as string, {
         connectTimeoutMS: 30 * 1000 /* 30 seconds */
       });
@@ -266,7 +269,7 @@ describe('slugger', () => {
             country: 'usa',
             email: 'john2@example.com'
           }),
-          sluggerOptionsInstance
+          sluggerOptions
         );
         expect(doc2.slug).toEqual('john-doe-2');
       });
@@ -288,7 +291,7 @@ describe('slugger', () => {
               country: 'usa',
               email: `john${n}@example.com`
             }),
-            sluggerOptionsInstance
+            sluggerOptions
           );
           expect(doc.slug).toEqual(`john-doe-${n}`);
         }
@@ -304,7 +307,7 @@ describe('slugger', () => {
               country: 'usa',
               email: `john${n}@example.com`
             }),
-            sluggerOptionsInstance
+            sluggerOptions
           );
         }
         await expect(() =>
@@ -316,7 +319,7 @@ describe('slugger', () => {
               country: 'usa',
               email: `john@example.com`
             }),
-            sluggerOptionsInstance
+            sluggerOptions
           )
         ).rejects.toThrowError('Reached 10 attempts without being able to insert. Giving up.');
       });
