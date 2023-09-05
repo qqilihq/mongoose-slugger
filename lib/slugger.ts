@@ -94,7 +94,7 @@ export class SluggerError extends Error {
  * (4) after creating the model you **must** wrap the model with
  * the `slugger.wrap` function.
  */
-export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
+export function plugin(schema: Schema<any, any>, options?: SluggerOptions<any>): void {
   if (!options) {
     throw new Error('options are missing.');
   }
