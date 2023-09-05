@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Require Mongoose 7+
 - Require at least NodeJS 16
 - Restructure plugin options – `SluggerOptions` is an interface instead of a class now
+- Rename exports: `plugin` becomes `sluggerPlugin`, `wrap` becomes `sluggerWrap`
 
 ## [5.0.0] – 2023-09-05
 

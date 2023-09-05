@@ -80,7 +80,7 @@ export class SluggerError extends Error {
  * The plugin for the Mongoose schema. Use it as follows:
  *
  * ```
- * schema.plugin(slugger.plugin, sluggerOptions);
+ * schema.plugin(sluggerPlugin, sluggerOptions);
  * ```
  *
  * **Important:**
@@ -92,9 +92,9 @@ export class SluggerError extends Error {
  * (3) the `index` specified in the SluggerOptions must exist,
  *
  * (4) after creating the model you **must** wrap the model with
- * the `slugger.wrap` function.
+ * the `sluggerWrap` function.
  */
-export function plugin(schema: Schema<any, any>, options?: SluggerOptions<any>): void {
+export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions<any>): void {
   utils.validateOptions(options);
 
   // make sure, that only one slugger instance is used per model (for now)
@@ -158,13 +158,13 @@ export function plugin(schema: Schema<any, any>, options?: SluggerOptions<any>):
  *
  * ```
  * let model = mongoose.model('MyData', schema);
- * model = slugger.wrap(model);
+ * model = sluggerWrap(model);
  * // model is ready to use now
  * ```
  *
  * @param model The model with the registered slugger plugin.
  */
-export function wrap<M extends Model<any>>(model: M): M {
+export function sluggerWrap<M extends Model<any>>(model: M): M {
   const plugins = utils.getSluggerPlugins(model.schema);
   if (plugins.length === 0) {
     throw new Error('slugger was not added to this model’s schema.');

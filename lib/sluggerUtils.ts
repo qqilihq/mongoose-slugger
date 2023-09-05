@@ -113,7 +113,7 @@ export function extractIndexNameFromError(msg: string): string | undefined {
 
 /** Gets all Slugger plugins which are assigned to the given schema. */
 export function getSluggerPlugins(schema: Schema<any, any>): any[] {
-  return (schema as any).plugins.filter((p: any) => p.fn === slugger.plugin);
+  return (schema as any).plugins.filter((p: any) => p.fn === slugger.sluggerPlugin);
 }
 
 function isMongoError(e: unknown): e is MongoError {

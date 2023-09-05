@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import * as slugger from '../lib/slugger';
+import { SluggerError, SluggerOptions, sluggerPlugin, sluggerWrap } from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
 import limax from 'limax';
 import fs from 'fs';
@@ -18,7 +18,7 @@ describe('slugger', () => {
 
   let schema: Schema<any>;
   let Model: mongoose.Model<MyDocument>;
-  let sluggerOptions: slugger.SluggerOptions<MyDocument>;
+  let sluggerOptions: SluggerOptions<MyDocument>;
 
   beforeAll(() => {
     schema = new mongoose.Schema({
@@ -49,10 +49,10 @@ describe('slugger', () => {
       maxAttempts: 10
     };
 
-    schema.plugin(slugger.plugin, sluggerOptions);
+    schema.plugin(sluggerPlugin, sluggerOptions);
 
     Model = mongoose.model<MyDocument>('SlugModel', schema);
-    Model = slugger.wrap(Model);
+    Model = sluggerWrap(Model);
   });
 
   afterAll(async () => {
@@ -82,11 +82,11 @@ describe('slugger', () => {
 
     it('throws error when specified index does not exist', () => {
       const schema = new mongoose.Schema({ name: String, slug: String });
-      const sluggerOptions: slugger.SluggerOptions<any> = {
+      const sluggerOptions: SluggerOptions<any> = {
         generateFrom: 'name',
         index: 'does_not_exist'
       };
-      expect(() => slugger.plugin(schema, sluggerOptions)).toThrowError(
+      expect(() => sluggerPlugin(schema, sluggerOptions)).toThrowError(
         /schema contains no index with name 'does_not_exist'./
       );
     });
@@ -94,28 +94,28 @@ describe('slugger', () => {
     it('throws error when applied more than once on a single schema', () => {
       const schema = new mongoose.Schema({ name: String, slug: String });
       schema.index({ slug: 1 }, { name: 'slug', unique: true });
-      const sluggerOptions: slugger.SluggerOptions<any> = {
+      const sluggerOptions: SluggerOptions<any> = {
         generateFrom: 'name',
         index: 'slug'
       };
-      schema.plugin(slugger.plugin, sluggerOptions);
-      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(/slugger was added more than once./);
+      schema.plugin(sluggerPlugin, sluggerOptions);
+      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrowError(/slugger was added more than once./);
     });
 
     it('throws error when index is not unique', () => {
       const schema = new mongoose.Schema({ name: String, slug: String });
       schema.index({ name: 1 }, { name: 'name' });
-      const sluggerOptions: slugger.SluggerOptions<any> = {
+      const sluggerOptions: SluggerOptions<any> = {
         generateFrom: 'name',
         index: 'name'
       };
-      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(/the index 'name' is not unique./);
+      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrowError(/the index 'name' is not unique./);
     });
 
     it('throws error when calling `wrap` on a model without plugin', () => {
       const schema = new mongoose.Schema({ name: String });
       const model = mongoose.model('TestModel', schema);
-      expect(() => slugger.wrap(model)).toThrowError(/slugger was not added./);
+      expect(() => sluggerWrap(model)).toThrowError(/slugger was not added./);
     });
 
     it('throws error when `maxAttempts` is less than one', () => {
@@ -132,12 +132,12 @@ describe('slugger', () => {
 
     it('throws error when `slugPath` is missing in the schema', () => {
       const schema = new mongoose.Schema({ name: String });
-      const sluggerOptions: slugger.SluggerOptions<any> = {
+      const sluggerOptions: SluggerOptions<any> = {
         generateFrom: 'name',
         index: 'name',
         slugPath: 'does_not_exist'
       };
-      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(
+      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrowError(
         /the slug path 'does_not_exist' does not exist in the schema./
       );
     });
@@ -145,12 +145,12 @@ describe('slugger', () => {
     it('throws error when `index` does not contain `slugPath`', () => {
       const schema = new mongoose.Schema({ name: String, slug: String });
       schema.index({ name: 1 }, { name: 'name_index', unique: true });
-      const sluggerOptions: slugger.SluggerOptions<any> = {
+      const sluggerOptions: SluggerOptions<any> = {
         generateFrom: 'name',
         index: 'name_index',
         slugPath: 'slug'
       };
-      expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(
+      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrowError(
         /the index 'name_index' does not contain the slug path 'slug'./
       );
     });
@@ -158,14 +158,14 @@ describe('slugger', () => {
     it('works with cloned schemas', () => {
       const schemaClone = schema.clone();
       const ModelClone = mongoose.model<MyDocument>('SlugModelClone', schemaClone);
-      slugger.wrap(ModelClone);
+      sluggerWrap(ModelClone);
     });
 
     it('throws if `wrap` is called more than once', () => {
       const schemaClone = schema.clone();
       const ModelClone = mongoose.model<MyDocument>('SlugModelClone2', schemaClone);
-      const WrappedModelClone = slugger.wrap(ModelClone);
-      expect(() => slugger.wrap(WrappedModelClone)).toThrowError('wrap function was already applied to this model.');
+      const WrappedModelClone = sluggerWrap(ModelClone);
+      expect(() => sluggerWrap(WrappedModelClone)).toThrowError('wrap function was already applied to this model.');
     });
   });
 
@@ -425,7 +425,7 @@ describe('slugger', () => {
 
     describe('generating duplicate slugs within one sequence', () => {
       let Model2: mongoose.Model<MyDocument>;
-      let sluggerOptions2: slugger.SluggerOptions<MyDocument>;
+      let sluggerOptions2: SluggerOptions<MyDocument>;
 
       beforeAll(async () => {
         const schema2 = new mongoose.Schema({
@@ -441,31 +441,31 @@ describe('slugger', () => {
           index: 'slug'
         };
 
-        schema2.plugin(slugger.plugin, sluggerOptions2);
+        schema2.plugin(sluggerPlugin, sluggerOptions2);
 
         Model2 = mongoose.model<MyDocument>('SlugModel2', schema2);
-        Model2 = slugger.wrap(Model2);
+        Model2 = sluggerWrap(Model2);
         await Model2.ensureIndexes();
       });
 
       it('throws when same slugs are generated within one save cycle using `Model.create`', async () => {
         await Model2.create({ firstname: 'john' });
         await expect(() => Model2.create({ firstname: 'john' })).rejects.toThrowError(
-          new slugger.SluggerError("Already attempted slug 'john' 3 times before. Giving up.")
+          new SluggerError("Already attempted slug 'john' 3 times before. Giving up.")
         );
       });
 
       it('throws when same slugs are generated within one save cycle using `document.save`', async () => {
         await Model2.create({ firstname: 'john' });
         await expect(() => new Model2({ firstname: 'john' }).save()).rejects.toThrowError(
-          new slugger.SluggerError("Already attempted slug 'john' 3 times before. Giving up.")
+          new SluggerError("Already attempted slug 'john' 3 times before. Giving up.")
         );
       });
     });
 
     describe('generating slugs with `maxlength` on schema', () => {
       let Model3: mongoose.Model<MyDocument>;
-      let sluggerOptions3: slugger.SluggerOptions<MyDocument>;
+      let sluggerOptions3: SluggerOptions<MyDocument>;
 
       beforeAll(async () => {
         const schema3 = new mongoose.Schema({
@@ -481,10 +481,10 @@ describe('slugger', () => {
           index: 'slug'
         };
 
-        schema3.plugin(slugger.plugin, sluggerOptions3);
+        schema3.plugin(sluggerPlugin, sluggerOptions3);
 
         Model3 = mongoose.model<MyDocument>('SlugModel3', schema3);
-        Model3 = slugger.wrap(Model3);
+        Model3 = sluggerWrap(Model3);
         await Model3.ensureIndexes();
       });
 
@@ -516,10 +516,10 @@ describe('slugger', () => {
           maxLength: 25
         };
 
-        schema4.plugin(slugger.plugin, sluggerOptions4);
+        schema4.plugin(sluggerPlugin, sluggerOptions4);
 
         Model4 = mongoose.model<MyDocument>('SlugModel4', schema4);
-        Model4 = slugger.wrap(Model4);
+        Model4 = sluggerWrap(Model4);
         await Model4.ensureIndexes();
       });
 
@@ -552,10 +552,10 @@ describe('slugger', () => {
           maxLength: 10
         };
 
-        schema5.plugin(slugger.plugin, sluggerOptions5);
+        schema5.plugin(sluggerPlugin, sluggerOptions5);
 
         Model5 = mongoose.model<MyDocument>('SlugModel5', schema5);
-        Model5 = slugger.wrap(Model5);
+        Model5 = sluggerWrap(Model5);
         await Model5.ensureIndexes();
       });
 

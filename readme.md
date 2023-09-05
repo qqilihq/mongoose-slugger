@@ -45,6 +45,8 @@ $ yarn add mongoose-slugger-plugin
 **Note:** A complete, working example is available in [this](https://github.com/qqilihq/mongoose-slugger-demo) repository.
 
 ```javascript
+import { sluggerPlugin, sluggerWrap } from 'mongoose-slugger-plugin';
+
 const schema = new mongoose.Schema({
   firstname: String,
   lastname: String,
@@ -69,12 +71,12 @@ const sluggerOptions: slugger.SluggerOptions = {
 };
 
 // add the plugin
-schema.plugin(slugger.plugin, sluggerOptions);
+schema.plugin(sluggerPlugin, sluggerOptions);
 
 let Model = mongoose.model('MyModel', schema);
 
 // make sure to wrap the Mongoose model
-Model = slugger.wrap(Model);
+Model = sluggerWrap(Model);
 ```
 
 **maxLength:** can be explicitly specified in the `sluggerOptions`. This plugin will read the maximum allowed length from mongo `schema` or `sluggerOptions`.
