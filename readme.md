@@ -56,8 +56,8 @@ const schema = new mongoose.Schema({
 // here, the slugs must be unique for each city
 schema.index({ city: 1, slug: 1 }, { name: 'city_slug', unique: true });
 
-// create the configuration
-const sluggerOptions = {
+// add the plugin
+schema.plugin(sluggerPlugin, {
   // the property path which stores the slug value
   slugPath: 'slug',
   // specify the properties which will be used for generating the slug
@@ -66,10 +66,7 @@ const sluggerOptions = {
   maxLength: 30,
   // the unique index, see above
   index: 'city_slug'
-};
-
-// add the plugin
-schema.plugin(sluggerPlugin, sluggerOptions);
+});
 
 let Model = mongoose.model('MyModel', schema);
 
