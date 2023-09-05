@@ -87,6 +87,8 @@ Install NPM dependencies with `yarn`.
 
 To execute the tests, run the `test` task. It starts a new MongoDB instance using [@shelf/jest-mongodb](https://github.com/shelfio/jest-mongodb) and then executes the test cases. The test coverage report can be found in `coverage/index.html`.
 
+Use [Volta](https://volta.sh) to automatically configure the proper Node version.
+
 For the best development experience, make sure that your editor supports [ESLint](https://eslint.org/docs/user-guide/integrations) and [EditorConfig](http://editorconfig.org).
 
 Linting of code and commit message happens on commit via [Husky](https://github.com/typicode/husky).
