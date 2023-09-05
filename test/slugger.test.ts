@@ -15,6 +15,8 @@ interface MyDocument extends mongoose.Document {
 }
 
 describe('slugger', () => {
+  mongoose.set('strictQuery', false);
+
   let Model: mongoose.Model<MyDocument>;
   let sluggerOptions: slugger.SluggerOptions<MyDocument>;
 
@@ -70,8 +72,8 @@ describe('slugger', () => {
     });
 
     it('throws error when neither `generateFrom` is given', () => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      expect(() => new slugger.SluggerOptions({ index: 'slug' } as any)).toThrowError(/`generateFrom` is missing./);
+      // @ts-expect-error argument missing
+      expect(() => new slugger.SluggerOptions({ index: 'slug' })).toThrowError(/`generateFrom` is missing./);
     });
 
     it('throws error when index is missing', () => {
@@ -235,10 +237,7 @@ describe('slugger', () => {
 
     beforeAll(async () => {
       await mongoose.connect(process.env.MONGO_URL as string, {
-        connectTimeoutMS: 30 * 1000 /* 30 seconds */,
-        useNewUrlParser: true,
-        useCreateIndex: true,
-        useUnifiedTopology: true
+        connectTimeoutMS: 30 * 1000 /* 30 seconds */
       });
       await Model.ensureIndexes();
     });
@@ -256,7 +255,7 @@ describe('slugger', () => {
           city: 'memphis',
           country: 'usa',
           email: 'john@example.com'
-        } as any);
+        });
         const doc2 = await utils.saveSlugWithRetries(
           new Model({
             firstname: 'john',
@@ -277,7 +276,7 @@ describe('slugger', () => {
           city: 'memphis',
           country: 'usa',
           email: 'john@example.com'
-        } as any); // slug = john-doe
+        }); // slug = john-doe
         for (let n = 2; n <= 10; n++) {
           const doc = await utils.saveSlugWithRetries(
             new Model({
@@ -321,9 +320,9 @@ describe('slugger', () => {
       });
     });
 
-    describe('promises', () => {
+    describe('promises using `Model.create`', () => {
       it('generates slug', async () => {
-        const doc = await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' } as any);
+        const doc = await Model.create({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' });
         expect(doc.slug).toEqual('john-doe');
       });
 
@@ -334,14 +333,14 @@ describe('slugger', () => {
           city: 'memphis',
           country: 'usa',
           email: 'john@example.com'
-        } as any);
+        });
         const doc2 = await Model.create({
           firstname: 'john',
           lastname: 'doe',
           city: 'memphis',
           country: 'usa',
           email: 'john2@example.com'
-        } as any);
+        });
         expect(doc2.slug).toEqual('john-doe-2');
       });
 
@@ -352,7 +351,7 @@ describe('slugger', () => {
           city: 'memphis',
           country: 'usa',
           slug: 'john'
-        } as any);
+        });
         expect(doc.slug).toEqual('john');
       });
 
@@ -380,15 +379,36 @@ describe('slugger', () => {
       });
 
       it('correctly propagates error which is caused by duplicate on different index', async () => {
-        await Model.create({ firstname: 'john', lastname: 'doe', email: 'john@example.com' } as any);
+        await Model.create({ firstname: 'john', lastname: 'doe', email: 'john@example.com' });
         await expect(
-          Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' } as any)
+          Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' })
         ).rejects.toThrowError(
           '11000 duplicate key error collection: test.slugmodels index: email dup key: { email: "john@example.com" }'
         );
       });
 
       it.todo('correctly propagates error which is not caused by duplicate keys');
+    });
+
+    describe('promises using `document.save`', () => {
+      it('generates another slug in case of a conflict', async () => {
+        await Model.create({
+          firstname: 'john',
+          lastname: 'doe',
+          city: 'memphis',
+          country: 'usa',
+          email: 'john@example.com'
+        });
+        const doc2 = new Model({
+          firstname: 'john',
+          lastname: 'doe',
+          city: 'memphis',
+          country: 'usa',
+          email: 'john2@example.com'
+        });
+        await doc2.save();
+        expect(doc2.slug).toEqual('john-doe-2');
+      });
     });
 
     describe('callbacks', () => {
@@ -475,16 +495,18 @@ describe('slugger', () => {
         await Model2.ensureIndexes();
       });
 
-      it('throws when same slugs are generated within one save cycle', async () => {
-        await Model2.create({ firstname: 'john' } as any);
-        try {
-          await expect(await Model2.create({ firstname: 'john' } as any)).rejects.toThrow();
-        } catch (e) {
-          expect(e).toBeInstanceOf(slugger.SluggerError);
-          expect((e as slugger.SluggerError).message).toEqual(
-            "Already attempted slug 'john' 3 times before. Giving up."
-          );
-        }
+      it('throws when same slugs are generated within one save cycle using `Model.create`', async () => {
+        await Model2.create({ firstname: 'john' });
+        await expect(() => Model2.create({ firstname: 'john' })).rejects.toThrowError(
+          new slugger.SluggerError("Already attempted slug 'john' 3 times before. Giving up.")
+        );
+      });
+
+      it('throws when same slugs are generated within one save cycle using `document.save`', async () => {
+        await Model2.create({ firstname: 'john' });
+        await expect(() => new Model2({ firstname: 'john' }).save()).rejects.toThrowError(
+          new slugger.SluggerError("Already attempted slug 'john' 3 times before. Giving up.")
+        );
       });
     });
 
@@ -517,7 +539,7 @@ describe('slugger', () => {
         const doc = await Model3.create({
           firstname: 'Salvador Felipe Jacinto Dalí y',
           lastname: 'Domenech'
-        } as any);
+        });
         expect(doc.slug).toHaveLength(25);
         expect(doc.slug).toEqual('salvador-felipe-jacinto-d');
       });
@@ -552,7 +574,7 @@ describe('slugger', () => {
         const doc = await Model4.create({
           firstname: 'Salvador Felipe Jacinto Dalí y',
           lastname: 'Domenech'
-        } as any);
+        });
         expect(doc.slug).toHaveLength(25);
         expect(doc.slug).toEqual('salvador-felipe-jacinto-d');
       });
