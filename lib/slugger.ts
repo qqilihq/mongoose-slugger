@@ -1,4 +1,4 @@
-import { Schema, Model, SaveOptions } from 'mongoose';
+import { Schema, Model, SaveOptions, Document } from 'mongoose';
 import * as utils from './sluggerUtils';
 
 /**
@@ -90,9 +90,6 @@ export class SluggerError extends Error {
  * (2) the `slugPath` specified in the SluggerOptions must exist,
  *
  * (3) the `index` specified in the SluggerOptions must exist,
- *
- * (4) after creating the model you **must** wrap the model with
- * the `sluggerWrap` function.
  */
 export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions<any>): void {
   utils.validateOptions(options);
@@ -133,7 +130,10 @@ export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions
     throw new Error(`the index '${options.index}' does not contain the slug path '${slugPath}'.`);
   }
 
-  schema.pre('validate', function (this, next) {
+  schema.pre('validate', function (next) {
+    // wrap the `save` function
+    applySaveWrap(this, options);
+
     let slugAttachment = (this as any)[utils.attachmentPropertyName] as utils.SlugDocumentAttachment;
     // only generate/retry slugs, when no slug
     // is explicitly given in the document
@@ -151,46 +151,29 @@ export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions
     }
     next();
   });
-}
-
-/**
- * Wraps the model, so that the slug-generation logic works.
- *
- * ```
- * let model = mongoose.model('MyData', schema);
- * model = sluggerWrap(model);
- * // model is ready to use now
- * ```
- *
- * @param model The model with the registered slugger plugin.
- */
-export function sluggerWrap<M extends Model<any>>(model: M): M {
-  const plugins = utils.getSluggerPlugins(model.schema);
-  if (plugins.length === 0) {
-    throw new Error('slugger was not added to this model’s schema.');
-  }
-  if (typeof model.prototype[utils.delegatedSaveFunction] !== 'undefined') {
-    throw new Error('wrap function was already applied to this model.');
-  }
-  const sluggerOptions = plugins[0].opts;
-  utils.validateOptions(sluggerOptions);
-  model.prototype[utils.delegatedSaveFunction] = model.prototype.save;
 
   // only check the DB version *once* on first call
   let hasCheckedMongoDB = false;
 
-  model.prototype.save = async function (options?: SaveOptions) {
-    if (!hasCheckedMongoDB) {
-      await utils.checkMongoDB(model.db.db);
-      hasCheckedMongoDB = true;
+  function applySaveWrap(document: Document<any>, options: SluggerOptions<any>) {
+    const model = document.constructor as Model<any>;
+
+    if (typeof model.prototype[utils.delegatedSaveFunction] !== 'undefined') {
+      return; // already wrapped
     }
 
-    return utils.saveSlugWithRetries(this, sluggerOptions, options);
-  };
+    model.prototype[utils.delegatedSaveFunction] = model.prototype.save;
 
-  // Since Mongoose 6 there’s `$save` which is mostly used instead of `save`
-  // https://github.com/Automattic/mongoose/commit/0270b515580eaccbc71b6fbf4af2fa8d2ee10471
-  model.prototype.$save = model.prototype.save;
+    model.prototype.save = async function (saveOptions?: SaveOptions) {
+      if (!hasCheckedMongoDB) {
+        await utils.checkMongoDB(model.db.db);
+        hasCheckedMongoDB = true;
+      }
+      return utils.saveSlugWithRetries(this, options, saveOptions);
+    };
 
-  return model;
+    // Since Mongoose 6 there’s `$save` which is mostly used instead of `save`
+    // https://github.com/Automattic/mongoose/commit/0270b515580eaccbc71b6fbf4af2fa8d2ee10471
+    model.prototype.$save = model.prototype.save;
+  }
 }

@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { SluggerError, SluggerOptions, sluggerPlugin, sluggerWrap } from '../lib/slugger';
+import { SluggerError, SluggerOptions, sluggerPlugin } from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
 import limax from 'limax';
 import fs from 'fs';
@@ -52,7 +52,6 @@ describe('slugger', () => {
     schema.plugin(sluggerPlugin, sluggerOptions);
 
     Model = mongoose.model<MyDocument>('SlugModel', schema);
-    Model = sluggerWrap(Model);
   });
 
   afterAll(async () => {
@@ -112,12 +111,6 @@ describe('slugger', () => {
       expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrowError(/the index 'name' is not unique./);
     });
 
-    it('throws error when calling `wrap` on a model without plugin', () => {
-      const schema = new mongoose.Schema({ name: String });
-      const model = mongoose.model('TestModel', schema);
-      expect(() => sluggerWrap(model)).toThrowError(/slugger was not added./);
-    });
-
     it('throws error when `maxAttempts` is less than one', () => {
       expect(() => utils.validateOptions({ generateFrom: 'name', index: 'name', maxAttempts: 0 })).toThrowError(
         /`maxAttempts` must be at least one./
@@ -159,19 +152,6 @@ describe('slugger', () => {
       expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrowError(
         /the index 'name_index' does not contain the slug path 'slug'./
       );
-    });
-
-    it('works with cloned schemas', () => {
-      const schemaClone = schema.clone();
-      const ModelClone = mongoose.model<MyDocument>('SlugModelClone', schemaClone);
-      sluggerWrap(ModelClone);
-    });
-
-    it('throws if `wrap` is called more than once', () => {
-      const schemaClone = schema.clone();
-      const ModelClone = mongoose.model<MyDocument>('SlugModelClone2', schemaClone);
-      const WrappedModelClone = sluggerWrap(ModelClone);
-      expect(() => sluggerWrap(WrappedModelClone)).toThrowError('wrap function was already applied to this model.');
     });
   });
 
@@ -450,7 +430,6 @@ describe('slugger', () => {
         schema2.plugin(sluggerPlugin, sluggerOptions2);
 
         Model2 = mongoose.model<MyDocument>('SlugModel2', schema2);
-        Model2 = sluggerWrap(Model2);
         await Model2.ensureIndexes();
       });
 
@@ -490,7 +469,6 @@ describe('slugger', () => {
         schema3.plugin(sluggerPlugin, sluggerOptions3);
 
         Model3 = mongoose.model<MyDocument>('SlugModel3', schema3);
-        Model3 = sluggerWrap(Model3);
         await Model3.ensureIndexes();
       });
 
@@ -525,7 +503,6 @@ describe('slugger', () => {
         schema4.plugin(sluggerPlugin, sluggerOptions4);
 
         Model4 = mongoose.model<MyDocument>('SlugModel4', schema4);
-        Model4 = sluggerWrap(Model4);
         await Model4.ensureIndexes();
       });
 
@@ -561,7 +538,6 @@ describe('slugger', () => {
         schema5.plugin(sluggerPlugin, sluggerOptions5);
 
         Model5 = mongoose.model<MyDocument>('SlugModel5', schema5);
-        Model5 = sluggerWrap(Model5);
         await Model5.ensureIndexes();
       });
 
