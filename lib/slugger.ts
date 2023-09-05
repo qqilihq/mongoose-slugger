@@ -133,20 +133,21 @@ export function plugin(schema: Schema<any, any>, options?: SluggerOptions<any>):
     throw new Error(`the index '${options.index}' does not contain the slug path '${slugPath}'.`);
   }
 
-  schema.pre('validate', function (this: any, next) {
-    let slugAttachment = this[utils.attachmentPropertyName] as utils.SlugDocumentAttachment;
+  schema.pre('validate', function (this, next) {
+    let slugAttachment = (this as any)[utils.attachmentPropertyName] as utils.SlugDocumentAttachment;
     // only generate/retry slugs, when no slug
     // is explicitly given in the document
     if (!slugAttachment && this.get(slugPath) == null) {
       slugAttachment = new utils.SlugDocumentAttachment();
-      this[utils.attachmentPropertyName] = slugAttachment;
+      (this as any)[utils.attachmentPropertyName] = slugAttachment;
     }
     if (slugAttachment) {
       const generator =
         typeof options.generateFrom === 'function'
           ? options.generateFrom
           : utils.createDefaultGenerator(options.generateFrom);
-      this.set(slugPath, generator(this, slugAttachment.slugAttempts.length, maxlength));
+      const slug = generator(this, slugAttachment.slugAttempts.length, maxlength);
+      this.set(slugPath, slug);
     }
     next();
   });
@@ -170,6 +171,7 @@ export function wrap<M extends Model<any>>(model: M): M {
   }
   // TODO - check if already wrapped?
   const sluggerOptions = plugins[0].opts;
+  utils.validateOptions(sluggerOptions);
   model.prototype[utils.delegatedSaveFunction] = model.prototype.save;
 
   // only check the DB version *once* on first call

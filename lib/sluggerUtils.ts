@@ -13,7 +13,7 @@ export const attachmentPropertyName = Symbol('_sluggerAttachment');
 
 export const defaultSlugPath = 'slug';
 
-export function validateOptions(init?: slugger.SluggerOptions<any>): asserts init is slugger.SluggerOptions<any> {
+export function validateOptions(init?: any): asserts init is slugger.SluggerOptions<any> {
   if (!init) {
     throw new Error('options are missing.');
   }
@@ -112,7 +112,7 @@ export function extractIndexNameFromError(msg: string): string | undefined {
 }
 
 /** Gets all Slugger plugins which are assigned to the given schema. */
-export function getSluggerPlugins(schema: Schema): any[] {
+export function getSluggerPlugins(schema: Schema<any, any>): any[] {
   return (schema as any).plugins.filter((p: any) => p.fn === slugger.plugin);
 }
 
