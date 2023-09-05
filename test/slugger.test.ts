@@ -124,6 +124,12 @@ describe('slugger', () => {
       );
     });
 
+    it('throws error when `generateFrom` is invalid type', () => {
+      expect(() => utils.validateOptions({ generateFrom: 1, index: 'name' })).toThrowError(
+        /`generateFrom` must be a string, array, or function./
+      );
+    });
+
     it('throws error when `maxLength` is less than one', () => {
       expect(() => utils.validateOptions({ generateFrom: 'name', index: 'name', maxLength: 0 })).toThrowError(
         /`maxLength` must be at least one./
