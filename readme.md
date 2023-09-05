@@ -57,7 +57,7 @@ const schema = new mongoose.Schema({
 schema.index({ city: 1, slug: 1 }, { name: 'city_slug', unique: true });
 
 // create the configuration
-const sluggerOptions: slugger.SluggerOptions = {
+const sluggerOptions = {
   // the property path which stores the slug value
   slugPath: 'slug',
   // specify the properties which will be used for generating the slug
