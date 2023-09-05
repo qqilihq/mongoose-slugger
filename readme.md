@@ -74,7 +74,7 @@ let Model = mongoose.model('MyModel', schema);
 Model = sluggerWrap(Model);
 ```
 
-**maxLength:** can be explicitly specified in the `sluggerOptions`. This plugin will read the maximum allowed length from mongo `schema` or `sluggerOptions`.
+`maxLength` can be explicitly specified in the plugin options. This plugin will read the maximum allowed length from Mongoose `schema` or the plugin options.
 
 ## Development
 
