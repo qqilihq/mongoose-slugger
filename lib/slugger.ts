@@ -162,9 +162,7 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
   }
 
   // make sure the specified index exists
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore Yes, this is a 2d array, the types are lying!
-  const indices: any[][] = schema.indexes();
+  const indices = schema.indexes();
   const index = indices.find(entry => entry.length > 1 && entry[1].name === options.index);
   if (!index) {
     throw new Error(`schema contains no index with name '${options.index}'.`);
