@@ -160,6 +160,13 @@ describe('slugger', () => {
       const ModelClone = mongoose.model<MyDocument>('SlugModelClone', schemaClone);
       slugger.wrap(ModelClone);
     });
+
+    it('throws if `wrap` is called more than once', () => {
+      const schemaClone = schema.clone();
+      const ModelClone = mongoose.model<MyDocument>('SlugModelClone2', schemaClone);
+      const WrappedModelClone = slugger.wrap(ModelClone);
+      expect(() => slugger.wrap(WrappedModelClone)).toThrowError('wrap function was already applied to this model.');
+    });
   });
 
   describe('default generator', () => {

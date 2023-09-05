@@ -169,7 +169,9 @@ export function wrap<M extends Model<any>>(model: M): M {
   if (plugins.length === 0) {
     throw new Error('slugger was not added to this model’s schema.');
   }
-  // TODO - check if already wrapped?
+  if (typeof model.prototype[utils.delegatedSaveFunction] !== 'undefined') {
+    throw new Error('wrap function was already applied to this model.');
+  }
   const sluggerOptions = plugins[0].opts;
   utils.validateOptions(sluggerOptions);
   model.prototype[utils.delegatedSaveFunction] = model.prototype.save;
