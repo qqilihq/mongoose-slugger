@@ -110,9 +110,8 @@ $ npm publish
 
 There’s a plethora of similar plugins, most of them old and abandoned though. Here’s a list, sorted by recent activity (first was updated recently when writing this):
 
-* https://github.com/ladjs/mongoose-slug-plugin
 * https://github.com/talha-asad/mongoose-url-slugs
-* https://github.com/ellipticaldoor/slugify-mongoose
+* https://github.com/ladjs/mongoose-slug-plugin
 * https://github.com/Kubide/mongoose-slug-generator
 * https://github.com/budiadiono/mongoose-slug-hero
 * https://github.com/dariuszp/mongoose-sluggable
