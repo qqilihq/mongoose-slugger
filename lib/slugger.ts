@@ -20,7 +20,7 @@ export interface GeneratorFunction<D extends Document> {
 /**
  * Initialization parameters for the SluggerOptions.
  */
-export interface SluggerInitOptions<D extends Document> {
+export interface SluggerOptions<D extends Document> {
   /**
    * The path in the schema where to save the generated slugs.
    * The property given by the path **must** already exist in
@@ -72,48 +72,6 @@ export interface SluggerInitOptions<D extends Document> {
   maxLength?: number;
 }
 
-export class SluggerOptions<D extends Document> {
-  readonly slugPath: string;
-  readonly generator: GeneratorFunction<D>;
-  readonly index: string;
-  readonly maxAttempts?: number;
-  readonly maxLength?: number;
-  constructor(init: SluggerInitOptions<D>) {
-    if (!init) {
-      throw new Error('config is missing.');
-    }
-    if (!init.index) {
-      throw new Error('`index` is missing.');
-    }
-    if (!init.generateFrom) {
-      throw new Error('`generateFrom` is missing.');
-    }
-    if (typeof init.maxLength === 'number' && init.maxLength < 1) {
-      throw new Error('`maxLength` must be at least one.');
-    }
-    if (typeof init.maxAttempts === 'number' && init.maxAttempts < 1) {
-      throw new Error('`maxAttempts` must be at least one.');
-    }
-
-    this.index = init.index;
-
-    // `slug` defaults to 'slug'
-    this.slugPath = init.slugPath || 'slug';
-
-    // build generator function from `generateFrom` property
-    if (typeof init.generateFrom === 'function') {
-      this.generator = init.generateFrom;
-    } else if (typeof init.generateFrom === 'string' || Array.isArray(init.generateFrom)) {
-      this.generator = utils.createDefaultGenerator(init.generateFrom);
-    } else {
-      throw new Error('`generateFrom` must be a string, array, or function.');
-    }
-
-    this.maxAttempts = init.maxAttempts;
-    this.maxLength = init.maxLength;
-  }
-}
-
 export class SluggerError extends Error {
   // nothing here
 }
@@ -147,44 +105,47 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
     throw new Error('slugger was added more than once.');
   }
 
+  const opts = new utils.ParsedSluggerOptions(options);
+  (schema as any)[utils.sluggerOptionsInstance] = opts;
+
   // make sure, that the `slugPath` exists
-  const schemaType: any = schema.path(options.slugPath);
+  const schemaType: any = schema.path(opts.slugPath);
   if (!schemaType) {
-    throw new Error(`the slug path '${options.slugPath}' does not exist in the schema.`);
+    throw new Error(`the slug path '${opts.slugPath}' does not exist in the schema.`);
   }
 
   // check if there is a `maxLength` constraint for the `slugPath`
   let maxlength = Number.MAX_SAFE_INTEGER;
-  if (typeof options.maxLength === 'number') {
-    maxlength = options.maxLength;
+  if (typeof opts.maxLength === 'number') {
+    maxlength = opts.maxLength;
   } else if (schemaType.options && typeof schemaType.options.maxlength === 'number') {
     maxlength = schemaType.options.maxlength;
   }
 
   // make sure the specified index exists
   const indices = schema.indexes();
-  const index = indices.find(entry => entry.length > 1 && entry[1].name === options.index);
+  const index = indices.find(entry => entry.length > 1 && entry[1].name === opts.index);
   if (!index) {
-    throw new Error(`schema contains no index with name '${options.index}'.`);
+    throw new Error(`schema contains no index with name '${opts.index}'.`);
   }
   if (!index[1].unique) {
-    throw new Error(`the index '${options.index}' is not unique.`);
+    throw new Error(`the index '${opts.index}' is not unique.`);
   }
   // make sure, that the `slugPath` is contained in the index
-  if (!{}.hasOwnProperty.call(index[0], options.slugPath)) {
-    throw new Error(`the index '${options.index}' does not contain the slug path '${options.slugPath}'.`);
+  if (!{}.hasOwnProperty.call(index[0], opts.slugPath)) {
+    throw new Error(`the index '${opts.index}' does not contain the slug path '${opts.slugPath}'.`);
   }
 
   schema.pre('validate', function (this: any, next) {
     let slugAttachment = this[utils.attachmentPropertyName] as utils.SlugDocumentAttachment;
     // only generate/retry slugs, when no slug
     // is explicitly given in the document
-    if (!slugAttachment && this.get(options.slugPath) == null) {
+    if (!slugAttachment && this.get(opts.slugPath) == null) {
       slugAttachment = new utils.SlugDocumentAttachment();
       this[utils.attachmentPropertyName] = slugAttachment;
     }
     if (slugAttachment) {
-      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length, maxlength));
+      this.set(opts.slugPath, opts.generator(this, slugAttachment.slugAttempts.length, maxlength));
     }
     next();
   });
@@ -206,8 +167,8 @@ export function wrap<M extends Model<any>>(model: M): M {
   if (plugins.length === 0) {
     throw new Error('slugger was not added to this model’s schema.');
   }
-  const sluggerOptions = plugins[0].opts;
-  if (!(sluggerOptions instanceof SluggerOptions)) {
+  const sluggerOptions = (model.schema as any)[utils.sluggerOptionsInstance];
+  if (!(sluggerOptions instanceof utils.ParsedSluggerOptions)) {
     throw new Error('attached `opts` are not of type SluggerOptions.');
   }
 

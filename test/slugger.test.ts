@@ -32,7 +32,7 @@ describe('slugger', () => {
     schema.index({ city: 1, country: 1, slug: 1 }, { name: 'city_country_slug', unique: true });
     schema.index({ email: 1 }, { name: 'email', unique: true });
 
-    sluggerOptions = new slugger.SluggerOptions<MyDocument>({
+    sluggerOptions = {
       slugPath: 'slug',
 
       generateFrom: (doc, attempt) => {
@@ -46,7 +46,7 @@ describe('slugger', () => {
       index: 'city_country_slug',
 
       maxAttempts: 10
-    });
+    };
 
     schema.plugin(slugger.plugin, sluggerOptions);
 
@@ -62,7 +62,7 @@ describe('slugger', () => {
   describe('options validation', () => {
     it('throws when creating config with missing object', () => {
       // @ts-expect-error constructor requires argument
-      expect(() => new slugger.SluggerOptions()).toThrowError(/config is missing./);
+      expect(() => new utils.ParsedSluggerOptions()).toThrowError(/config is missing./);
     });
 
     it('throws error when configuration is missing', () => {
@@ -72,20 +72,20 @@ describe('slugger', () => {
 
     it('throws error when neither `generateFrom` is given', () => {
       // @ts-expect-error argument missing
-      expect(() => new slugger.SluggerOptions({ index: 'slug' })).toThrowError(/`generateFrom` is missing./);
+      expect(() => new utils.ParsedSluggerOptions({ index: 'slug' })).toThrowError(/`generateFrom` is missing./);
     });
 
     it('throws error when index is missing', () => {
       // @ts-expect-error `index` argument is missing
-      expect(() => new slugger.SluggerOptions({})).toThrowError(/`index` is missing./);
+      expect(() => new utils.ParsedSluggerOptions({})).toThrowError(/`index` is missing./);
     });
 
     it('throws error when specified index does not exist', () => {
       const schema = new mongoose.Schema({ name: String, slug: String });
-      const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({
+      const sluggerOptions: slugger.SluggerOptions<any> = {
         generateFrom: 'name',
         index: 'does_not_exist'
-      });
+      };
       expect(() => slugger.plugin(schema, sluggerOptions)).toThrowError(
         /schema contains no index with name 'does_not_exist'./
       );
@@ -94,10 +94,10 @@ describe('slugger', () => {
     it('throws error when applied more than once on a single schema', () => {
       const schema = new mongoose.Schema({ name: String, slug: String });
       schema.index({ slug: 1 }, { name: 'slug', unique: true });
-      const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({
+      const sluggerOptions: slugger.SluggerOptions<any> = {
         generateFrom: 'name',
         index: 'slug'
-      });
+      };
       schema.plugin(slugger.plugin, sluggerOptions);
       expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(/slugger was added more than once./);
     });
@@ -105,10 +105,10 @@ describe('slugger', () => {
     it('throws error when index is not unique', () => {
       const schema = new mongoose.Schema({ name: String, slug: String });
       schema.index({ name: 1 }, { name: 'name' });
-      const sluggerOptions: slugger.SluggerOptions<any> = new slugger.SluggerOptions({
+      const sluggerOptions: slugger.SluggerOptions<any> = {
         generateFrom: 'name',
         index: 'name'
-      });
+      };
       expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(/the index 'name' is not unique./);
     });
 
@@ -119,24 +119,24 @@ describe('slugger', () => {
     });
 
     it('throws error when `maxAttempts` is less than one', () => {
-      expect(() => new slugger.SluggerOptions({ generateFrom: 'name', index: 'name', maxAttempts: 0 })).toThrowError(
-        /`maxAttempts` must be at least one./
-      );
+      expect(
+        () => new utils.ParsedSluggerOptions({ generateFrom: 'name', index: 'name', maxAttempts: 0 })
+      ).toThrowError(/`maxAttempts` must be at least one./);
     });
 
     it('throws error when `maxLength` is less than one', () => {
-      expect(() => new slugger.SluggerOptions({ generateFrom: 'name', index: 'name', maxLength: 0 })).toThrowError(
+      expect(() => new utils.ParsedSluggerOptions({ generateFrom: 'name', index: 'name', maxLength: 0 })).toThrowError(
         /`maxLength` must be at least one./
       );
     });
 
     it('throws error when `slugPath` is missing in the schema', () => {
       const schema = new mongoose.Schema({ name: String });
-      const sluggerOptions = new slugger.SluggerOptions({
+      const sluggerOptions: slugger.SluggerOptions<any> = {
         generateFrom: 'name',
         index: 'name',
         slugPath: 'does_not_exist'
-      });
+      };
       expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(
         /the slug path 'does_not_exist' does not exist in the schema./
       );
@@ -145,11 +145,11 @@ describe('slugger', () => {
     it('throws error when `index` does not contain `slugPath`', () => {
       const schema = new mongoose.Schema({ name: String, slug: String });
       schema.index({ name: 1 }, { name: 'name_index', unique: true });
-      const sluggerOptions = new slugger.SluggerOptions({
+      const sluggerOptions: slugger.SluggerOptions<any> = {
         generateFrom: 'name',
         index: 'name_index',
         slugPath: 'slug'
-      });
+      };
       expect(() => schema.plugin(slugger.plugin, sluggerOptions)).toThrowError(
         /the index 'name_index' does not contain the slug path 'slug'./
       );
@@ -234,7 +234,10 @@ describe('slugger', () => {
 
     // mongoose.set('debug', true);
 
+    let sluggerOptionsInstance: utils.ParsedSluggerOptions<MyDocument>;
+
     beforeAll(async () => {
+      sluggerOptionsInstance = new utils.ParsedSluggerOptions(sluggerOptions);
       await mongoose.connect(process.env.MONGO_URL as string, {
         connectTimeoutMS: 30 * 1000 /* 30 seconds */
       });
@@ -263,7 +266,7 @@ describe('slugger', () => {
             country: 'usa',
             email: 'john2@example.com'
           }),
-          sluggerOptions
+          sluggerOptionsInstance
         );
         expect(doc2.slug).toEqual('john-doe-2');
       });
@@ -285,7 +288,7 @@ describe('slugger', () => {
               country: 'usa',
               email: `john${n}@example.com`
             }),
-            sluggerOptions
+            sluggerOptionsInstance
           );
           expect(doc.slug).toEqual(`john-doe-${n}`);
         }
@@ -301,7 +304,7 @@ describe('slugger', () => {
               country: 'usa',
               email: `john${n}@example.com`
             }),
-            sluggerOptions
+            sluggerOptionsInstance
           );
         }
         await expect(() =>
@@ -313,7 +316,7 @@ describe('slugger', () => {
               country: 'usa',
               email: `john@example.com`
             }),
-            sluggerOptions
+            sluggerOptionsInstance
           )
         ).rejects.toThrowError('Reached 10 attempts without being able to insert. Giving up.');
       });
@@ -422,11 +425,11 @@ describe('slugger', () => {
 
         schema2.index({ slug: 1 }, { name: 'slug', unique: true });
 
-        sluggerOptions2 = new slugger.SluggerOptions<MyDocument>({
+        sluggerOptions2 = {
           slugPath: 'slug',
           generateFrom: doc => doc.firstname,
           index: 'slug'
-        });
+        };
 
         schema2.plugin(slugger.plugin, sluggerOptions2);
 
@@ -462,11 +465,11 @@ describe('slugger', () => {
 
         schema3.index({ slug: 1 }, { name: 'slug', unique: true });
 
-        sluggerOptions3 = new slugger.SluggerOptions<MyDocument>({
+        sluggerOptions3 = {
           slugPath: 'slug',
           generateFrom: 'firstname',
           index: 'slug'
-        });
+        };
 
         schema3.plugin(slugger.plugin, sluggerOptions3);
 
@@ -496,12 +499,12 @@ describe('slugger', () => {
 
         schema4.index({ slug: 1 }, { name: 'slug', unique: true });
 
-        const sluggerOptions4 = new slugger.SluggerOptions<MyDocument>({
+        const sluggerOptions4 = {
           slugPath: 'slug',
           generateFrom: 'firstname',
           index: 'slug',
           maxLength: 25
-        });
+        };
 
         schema4.plugin(slugger.plugin, sluggerOptions4);
 
@@ -532,12 +535,12 @@ describe('slugger', () => {
 
         schema5.index({ slug: 1 }, { name: 'slug', unique: true });
 
-        const sluggerOptions5 = new slugger.SluggerOptions<MyDocument>({
+        const sluggerOptions5 = {
           slugPath: 'slug',
           generateFrom: 'name',
           index: 'slug',
           maxLength: 10
-        });
+        };
 
         schema5.plugin(slugger.plugin, sluggerOptions5);
 
