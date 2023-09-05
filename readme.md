@@ -42,8 +42,6 @@ $ yarn add mongoose-slugger-plugin
 
 ## Usage
 
-**Note:** A complete, working example is available in [this](https://github.com/qqilihq/mongoose-slugger-demo) repository.
-
 ```javascript
 import { sluggerPlugin, sluggerWrap } from 'mongoose-slugger-plugin';
 
