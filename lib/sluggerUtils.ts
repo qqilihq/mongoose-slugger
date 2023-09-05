@@ -1,4 +1,4 @@
-import { Document, Schema, SaveOptions } from 'mongoose';
+import { Schema, SaveOptions, HydratedDocument } from 'mongoose';
 import { MongoError } from 'mongodb';
 import * as slugger from './slugger';
 import limax from 'limax';
@@ -42,11 +42,11 @@ export class SlugDocumentAttachment {
   slugAttempts: string[] = [];
 }
 
-export async function saveSlugWithRetries<D extends Document>(
-  document: D,
+export async function saveSlugWithRetries<D>(
+  document: HydratedDocument<D>,
   sluggerOptions: slugger.SluggerOptions<D>,
   saveOptions?: SaveOptions
-): Promise<D> {
+): Promise<HydratedDocument<D>> {
   for (;;) {
     try {
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -88,8 +88,8 @@ export async function saveSlugWithRetries<D extends Document>(
   }
 }
 
-export function createDefaultGenerator(paths: string | string[]): slugger.GeneratorFunction<Document> {
-  return (doc: Document, attempt: number, maxLength?: number) => {
+export function createDefaultGenerator(paths: string | string[]): slugger.GeneratorFunction<HydratedDocument<any>> {
+  return (doc: HydratedDocument<any>, attempt: number, maxLength?: number) => {
     const values = ([] as string[]).concat(paths).map(path => doc.get(path) as string);
     // replace underscore with hyphen
     const slug = limax(values.join('-'), { custom: { _: '-' } });

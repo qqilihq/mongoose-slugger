@@ -1,10 +1,10 @@
-import { Document, Schema, Model, SaveOptions } from 'mongoose';
+import { Schema, Model, SaveOptions } from 'mongoose';
 import * as utils from './sluggerUtils';
 
 /**
  * Strategy for generating new slugs.
  */
-export interface GeneratorFunction<D extends Document> {
+export interface GeneratorFunction<D> {
   /**
    * Generates a new slug for the given document. This function
    * is invoked until a unique slug has been found and the document
@@ -20,7 +20,7 @@ export interface GeneratorFunction<D extends Document> {
 /**
  * Initialization parameters for the SluggerOptions.
  */
-export interface SluggerOptions<D extends Document> {
+export interface SluggerOptions<D> {
   /**
    * The path in the schema where to save the generated slugs.
    * The property given by the path **must** already exist in

@@ -4,7 +4,7 @@ import * as utils from '../lib/sluggerUtils';
 import limax from 'limax';
 import fs from 'fs';
 
-interface MyDocument extends mongoose.Document {
+interface MyDocument {
   firstname: string;
   lastname: string;
   city: string;
@@ -16,12 +16,12 @@ interface MyDocument extends mongoose.Document {
 describe('slugger', () => {
   mongoose.set('strictQuery', false);
 
-  let schema: Schema<any>;
+  let schema: Schema<MyDocument>;
   let Model: mongoose.Model<MyDocument>;
   let sluggerOptions: SluggerOptions<MyDocument>;
 
   beforeAll(() => {
-    schema = new mongoose.Schema({
+    schema = new mongoose.Schema<MyDocument>({
       firstname: String,
       lastname: String,
       city: String,
