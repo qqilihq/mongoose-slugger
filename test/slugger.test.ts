@@ -3,7 +3,6 @@ import * as slugger from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
 import limax from 'limax';
 import fs from 'fs';
-import { MongoError } from 'mongodb';
 
 interface MyDocument extends mongoose.Document {
   firstname: string;
@@ -408,65 +407,6 @@ describe('slugger', () => {
         });
         await doc2.save();
         expect(doc2.slug).toEqual('john-doe-2');
-      });
-    });
-
-    describe('callbacks', () => {
-      it('does not return promises when using callbacks', done => {
-        const result = new Model({}).save(err => void done(err));
-        expect(result).toBeUndefined();
-      });
-
-      it('generates slug', done => {
-        void new Model({ firstname: 'john', lastname: 'doe', city: 'memphis', country: 'usa' }).save((err, product) => {
-          expect(err).toBeUndefined();
-          expect(product).toBeInstanceOf(Object);
-          done();
-        });
-      });
-
-      it('generates another slug in case of a conflict', done => {
-        void new Model({
-          firstname: 'john',
-          lastname: 'doe',
-          city: 'memphis',
-          country: 'usa',
-          email: 'john@example.com'
-        }).save(err => {
-          if (err) {
-            done(err);
-            return;
-          }
-          void new Model({
-            firstname: 'john',
-            lastname: 'doe',
-            city: 'memphis',
-            country: 'usa',
-            email: 'john2@example.com'
-          }).save((err, product) => {
-            if (err) {
-              done(err);
-              return;
-            }
-            expect(err).toBeUndefined();
-            expect(product.slug).toEqual('john-doe-2');
-            done();
-          });
-        });
-      });
-
-      it('propagates error which is caused by duplicate on different index', done => {
-        void new Model({ firstname: 'john', lastname: 'doe', email: 'john@example.com' }).save(err => {
-          if (err) {
-            done(err);
-            return;
-          }
-          void new Model({ firstname: 'john', lastname: 'dope', email: 'john@example.com' }).save(err => {
-            expect(err).toBeInstanceOf(Object);
-            expect((err as MongoError).code).toEqual(11000);
-            done();
-          });
-        });
       });
     });
 

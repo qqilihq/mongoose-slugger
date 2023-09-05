@@ -1,4 +1,4 @@
-import { Document, Schema, Model } from 'mongoose';
+import { Document, Schema, Model, SaveOptions } from 'mongoose';
 import * as utils from './sluggerUtils';
 
 /**
@@ -218,33 +218,13 @@ export function wrap<M extends Model<any>>(model: M): M {
   // only check the DB version *once* on first call
   let hasCheckedMongoDB = false;
 
-  // @ts-expect-error ignore “TS7030: Not all code paths return a value.”
-  // this is fine, as we’re following Mongoose’s API here
-  model.prototype.save = function (saveOptions: any, fn: any) {
-    if (typeof saveOptions === 'function') {
-      fn = saveOptions;
-      saveOptions = undefined;
-    }
-
-    let promise: Promise<any> = Promise.resolve();
-
+  model.prototype.save = async function (options?: SaveOptions) {
     if (!hasCheckedMongoDB) {
-      promise = promise.then(() => utils.checkMongoDB(model.db.db));
+      await utils.checkMongoDB(model.db.db);
       hasCheckedMongoDB = true;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    promise = promise.then(() => utils.saveSlugWithRetries(this, sluggerOptions, saveOptions));
-
-    if (!fn) {
-      return promise;
-    }
-
-    // nb: don't do then().catch() -- https://stackoverflow.com/a/40642436
-    promise.then(
-      result => fn(undefined, result),
-      reason => fn(reason)
-    );
+    return utils.saveSlugWithRetries(this, sluggerOptions, options);
   };
 
   // Since Mongoose 6 there’s `$save` which is mostly used instead of `save`

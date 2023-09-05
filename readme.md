@@ -24,8 +24,6 @@ There exist several similar Mongoose plugins already, however, none of them fit 
 
 * We need the ability for “scoped” slugs. This means: Slugs can be unique with regards to other document properties (e.g. have unique person name slugs in regards to a place, …)
 
-* Must work with callbacks and promises.
-
 * It must be possible to specify the slug generation strategy.
 
 ## Caveats
