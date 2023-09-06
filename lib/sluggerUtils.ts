@@ -1,4 +1,4 @@
-import { Document, Schema, SaveOptions } from 'mongoose';
+import { Schema, SaveOptions, HydratedDocument } from 'mongoose';
 import { MongoError } from 'mongodb';
 import * as slugger from './slugger';
 import limax from 'limax';
@@ -11,15 +11,42 @@ export const delegatedSaveFunction = Symbol('_sluggerSaveDelegate');
 
 export const attachmentPropertyName = Symbol('_sluggerAttachment');
 
+export const defaultSlugPath = 'slug';
+
+export function validateOptions(init?: any): asserts init is slugger.SluggerOptions<any> {
+  if (!init) {
+    throw new Error('options are missing.');
+  }
+  if (!init.index) {
+    throw new Error('`index` is missing.');
+  }
+  if (!init.generateFrom) {
+    throw new Error('`generateFrom` is missing.');
+  }
+  if (typeof init.maxLength === 'number' && init.maxLength < 1) {
+    throw new Error('`maxLength` must be at least one.');
+  }
+  if (typeof init.maxAttempts === 'number' && init.maxAttempts < 1) {
+    throw new Error('`maxAttempts` must be at least one.');
+  }
+  if (
+    typeof init.generateFrom !== 'function' &&
+    typeof init.generateFrom !== 'string' &&
+    !Array.isArray(init.generateFrom)
+  ) {
+    throw new Error('`generateFrom` must be a string, array, or function.');
+  }
+}
+
 export class SlugDocumentAttachment {
   slugAttempts: string[] = [];
 }
 
-export async function saveSlugWithRetries<D extends Document>(
-  document: D,
+export async function saveSlugWithRetries<D>(
+  document: HydratedDocument<D>,
   sluggerOptions: slugger.SluggerOptions<D>,
   saveOptions?: SaveOptions
-): Promise<D> {
+): Promise<HydratedDocument<D>> {
   for (;;) {
     try {
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -34,7 +61,8 @@ export async function saveSlugWithRetries<D extends Document>(
           e.message &&
           extractIndexNameFromError(e.message) === sluggerOptions.index
         ) {
-          const attemptedSlug = document.get(sluggerOptions.slugPath) as string;
+          const slugPath = sluggerOptions.slugPath ?? defaultSlugPath;
+          const attemptedSlug = document.get(slugPath) as string;
           const attemptCount = slugAttachment.slugAttempts.filter(slug => slug === attemptedSlug).length;
 
           if (attemptCount >= 3) {
@@ -60,11 +88,11 @@ export async function saveSlugWithRetries<D extends Document>(
   }
 }
 
-export function createDefaultGenerator(paths: string | string[]): slugger.GeneratorFunction<Document> {
-  return (doc: Document, attempt: number, maxLength?: number) => {
+export function createDefaultGenerator(paths: string | string[]): slugger.GeneratorFunction<HydratedDocument<any>> {
+  return (doc: HydratedDocument<any>, attempt: number, maxLength?: number) => {
     const values = ([] as string[]).concat(paths).map(path => doc.get(path) as string);
     // replace underscore with hyphen
-    const slug = limax(values.join('-'), { custom: { _: '-' } });
+    const slug = limaxFixed(values.join('-'));
     const suffix = attempt > 0 ? `-${attempt + 1}` : '';
     let trimmedSlug = slug;
     if (typeof maxLength === 'number') {
@@ -84,8 +112,8 @@ export function extractIndexNameFromError(msg: string): string | undefined {
 }
 
 /** Gets all Slugger plugins which are assigned to the given schema. */
-export function getSluggerPlugins(schema: Schema): any[] {
-  return (schema as any).plugins.filter((p: any) => p.fn === slugger.plugin);
+export function getSluggerPlugins(schema: Schema<any, any>): any[] {
+  return (schema as any).plugins.filter((p: any) => p.fn === slugger.sluggerPlugin);
 }
 
 function isMongoError(e: unknown): e is MongoError {
@@ -131,4 +159,21 @@ export function checkMongoDBVersion(status: unknown): void {
   if (semver.lt(version, '4.2.0')) {
     throw new Error(`At least MongoDB version 4.2.0 is required, actual version is ${version}`);
   }
+}
+
+export function limaxFixed(input: string): string {
+  // https://github.com/lovell/limax/issues/50
+  const fixedMapping = {
+    ä: 'ae',
+    Ä: 'Ae',
+    ö: 'oe',
+    Ö: 'Oe',
+    ü: 'ue',
+    Ü: 'Ue'
+  };
+  let fixedInput = input;
+  for (const mapping of Object.entries(fixedMapping)) {
+    fixedInput = fixedInput.replaceAll(mapping[0], mapping[1]);
+  }
+  return limax(fixedInput, { custom: { _: '-' } });
 }

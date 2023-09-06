@@ -1,10 +1,10 @@
-import { Document, Schema, Model } from 'mongoose';
+import { Schema, Model, SaveOptions, Document } from 'mongoose';
 import * as utils from './sluggerUtils';
 
 /**
  * Strategy for generating new slugs.
  */
-export interface GeneratorFunction<D extends Document> {
+export interface GeneratorFunction<D> {
   /**
    * Generates a new slug for the given document. This function
    * is invoked until a unique slug has been found and the document
@@ -20,7 +20,7 @@ export interface GeneratorFunction<D extends Document> {
 /**
  * Initialization parameters for the SluggerOptions.
  */
-export interface SluggerInitOptions<D extends Document> {
+export interface SluggerOptions<D> {
   /**
    * The path in the schema where to save the generated slugs.
    * The property given by the path **must** already exist in
@@ -72,48 +72,6 @@ export interface SluggerInitOptions<D extends Document> {
   maxLength?: number;
 }
 
-export class SluggerOptions<D extends Document> {
-  readonly slugPath: string;
-  readonly generator: GeneratorFunction<D>;
-  readonly index: string;
-  readonly maxAttempts?: number;
-  readonly maxLength?: number;
-  constructor(init: SluggerInitOptions<D>) {
-    if (!init) {
-      throw new Error('config is missing.');
-    }
-    if (!init.index) {
-      throw new Error('`index` is missing.');
-    }
-    if (!init.generateFrom) {
-      throw new Error('`generateFrom` is missing.');
-    }
-    if (typeof init.maxLength === 'number' && init.maxLength < 1) {
-      throw new Error('`maxLength` must be at least one.');
-    }
-    if (typeof init.maxAttempts === 'number' && init.maxAttempts < 1) {
-      throw new Error('`maxAttempts` must be at least one.');
-    }
-
-    this.index = init.index;
-
-    // `slug` defaults to 'slug'
-    this.slugPath = init.slugPath || 'slug';
-
-    // build generator function from `generateFrom` property
-    if (typeof init.generateFrom === 'function') {
-      this.generator = init.generateFrom;
-    } else if (typeof init.generateFrom === 'string' || Array.isArray(init.generateFrom)) {
-      this.generator = utils.createDefaultGenerator(init.generateFrom);
-    } else {
-      throw new Error('`generateFrom` must be a string, array, or function.');
-    }
-
-    this.maxAttempts = init.maxAttempts;
-    this.maxLength = init.maxLength;
-  }
-}
-
 export class SluggerError extends Error {
   // nothing here
 }
@@ -122,7 +80,7 @@ export class SluggerError extends Error {
  * The plugin for the Mongoose schema. Use it as follows:
  *
  * ```
- * schema.plugin(slugger.plugin, sluggerOptions);
+ * schema.plugin(sluggerPlugin, sluggerOptions);
  * ```
  *
  * **Important:**
@@ -132,14 +90,9 @@ export class SluggerError extends Error {
  * (2) the `slugPath` specified in the SluggerOptions must exist,
  *
  * (3) the `index` specified in the SluggerOptions must exist,
- *
- * (4) after creating the model you **must** wrap the model with
- * the `slugger.wrap` function.
  */
-export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
-  if (!options) {
-    throw new Error('options are missing.');
-  }
+export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions<any>): void {
+  utils.validateOptions(options);
 
   // make sure, that only one slugger instance is used per model (for now)
   const plugins = utils.getSluggerPlugins(schema);
@@ -147,10 +100,12 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
     throw new Error('slugger was added more than once.');
   }
 
+  const slugPath = options.slugPath ?? utils.defaultSlugPath;
+
   // make sure, that the `slugPath` exists
-  const schemaType: any = schema.path(options.slugPath);
+  const schemaType: any = schema.path(slugPath);
   if (!schemaType) {
-    throw new Error(`the slug path '${options.slugPath}' does not exist in the schema.`);
+    throw new Error(`the slug path '${slugPath}' does not exist in the schema.`);
   }
 
   // check if there is a `maxLength` constraint for the `slugPath`
@@ -162,9 +117,7 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
   }
 
   // make sure the specified index exists
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore Yes, this is a 2d array, the types are lying!
-  const indices: any[][] = schema.indexes();
+  const indices = schema.indexes();
   const index = indices.find(entry => entry.length > 1 && entry[1].name === options.index);
   if (!index) {
     throw new Error(`schema contains no index with name '${options.index}'.`);
@@ -173,83 +126,54 @@ export function plugin(schema: Schema, options?: SluggerOptions<any>): void {
     throw new Error(`the index '${options.index}' is not unique.`);
   }
   // make sure, that the `slugPath` is contained in the index
-  if (!{}.hasOwnProperty.call(index[0], options.slugPath)) {
-    throw new Error(`the index '${options.index}' does not contain the slug path '${options.slugPath}'.`);
+  if (!{}.hasOwnProperty.call(index[0], slugPath)) {
+    throw new Error(`the index '${options.index}' does not contain the slug path '${slugPath}'.`);
   }
 
-  schema.pre('validate', function (this: any, next) {
-    let slugAttachment = this[utils.attachmentPropertyName] as utils.SlugDocumentAttachment;
+  schema.pre('validate', function (next) {
+    // wrap the `save` function
+    applySaveWrap(this, options);
+
+    let slugAttachment = (this as any)[utils.attachmentPropertyName] as utils.SlugDocumentAttachment;
     // only generate/retry slugs, when no slug
     // is explicitly given in the document
-    if (!slugAttachment && this.get(options.slugPath) == null) {
+    if (!slugAttachment && this.get(slugPath) == null) {
       slugAttachment = new utils.SlugDocumentAttachment();
-      this[utils.attachmentPropertyName] = slugAttachment;
+      (this as any)[utils.attachmentPropertyName] = slugAttachment;
     }
     if (slugAttachment) {
-      this.set(options.slugPath, options.generator(this, slugAttachment.slugAttempts.length, maxlength));
+      const generator =
+        typeof options.generateFrom === 'function'
+          ? options.generateFrom
+          : utils.createDefaultGenerator(options.generateFrom);
+      const slug = generator(this, slugAttachment.slugAttempts.length, maxlength);
+      this.set(slugPath, slug);
     }
     next();
   });
-}
-
-/**
- * Wraps the model, so that the slug-generation logic works.
- *
- * ```
- * let model = mongoose.model('MyData', schema);
- * model = slugger.wrap(model);
- * // model is ready to use now
- * ```
- *
- * @param model The model with the registered slugger plugin.
- */
-export function wrap<M extends Model<any>>(model: M): M {
-  const plugins = utils.getSluggerPlugins(model.schema);
-  if (plugins.length === 0) {
-    throw new Error('slugger was not added to this model’s schema.');
-  }
-  const sluggerOptions = plugins[0].opts;
-  if (!(sluggerOptions instanceof SluggerOptions)) {
-    throw new Error('attached `opts` are not of type SluggerOptions.');
-  }
-
-  model.prototype[utils.delegatedSaveFunction] = model.prototype.save;
 
   // only check the DB version *once* on first call
   let hasCheckedMongoDB = false;
 
-  // @ts-expect-error ignore “TS7030: Not all code paths return a value.”
-  // this is fine, as we’re following Mongoose’s API here
-  model.prototype.save = function (saveOptions: any, fn: any) {
-    if (typeof saveOptions === 'function') {
-      fn = saveOptions;
-      saveOptions = undefined;
+  function applySaveWrap(document: Document<any>, options: SluggerOptions<any>) {
+    const model = document.constructor as Model<any>;
+
+    if (typeof model.prototype[utils.delegatedSaveFunction] !== 'undefined') {
+      return; // already wrapped
     }
 
-    let promise: Promise<any> = Promise.resolve();
+    model.prototype[utils.delegatedSaveFunction] = model.prototype.save;
 
-    if (!hasCheckedMongoDB) {
-      promise = promise.then(() => utils.checkMongoDB(model.db.db));
-      hasCheckedMongoDB = true;
-    }
+    model.prototype.save = async function (saveOptions?: SaveOptions) {
+      if (!hasCheckedMongoDB) {
+        await utils.checkMongoDB(model.db.db);
+        hasCheckedMongoDB = true;
+      }
+      return utils.saveSlugWithRetries(this, options, saveOptions);
+    };
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    promise = promise.then(() => utils.saveSlugWithRetries(this, sluggerOptions, saveOptions));
-
-    if (!fn) {
-      return promise;
-    }
-
-    // nb: don't do then().catch() -- https://stackoverflow.com/a/40642436
-    promise.then(
-      result => fn(undefined, result),
-      reason => fn(reason)
-    );
-  };
-
-  // Since Mongoose 6 there’s `$save` which is mostly used instead of `save`
-  // https://github.com/Automattic/mongoose/commit/0270b515580eaccbc71b6fbf4af2fa8d2ee10471
-  model.prototype.$save = model.prototype.save;
-
-  return model;
+    // Since Mongoose 6 there’s `$save` which is mostly used instead of `save`
+    // https://github.com/Automattic/mongoose/commit/0270b515580eaccbc71b6fbf4af2fa8d2ee10471
+    model.prototype.$save = model.prototype.save;
+  }
 }

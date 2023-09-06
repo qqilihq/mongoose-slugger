@@ -24,8 +24,6 @@ There exist several similar Mongoose plugins already, however, none of them fit 
 
 * We need the ability for “scoped” slugs. This means: Slugs can be unique with regards to other document properties (e.g. have unique person name slugs in regards to a place, …)
 
-* Must work with callbacks and promises.
-
 * It must be possible to specify the slug generation strategy.
 
 ## Caveats
@@ -33,8 +31,6 @@ There exist several similar Mongoose plugins already, however, none of them fit 
 1. For now, only **one** slugger instance per schema can be used.
 
 2. In the very worst case, this will perform a very high amount of attempts to insert. This is by design, as we assume that potential conflicts are relatively rare and, if they happen, can be circumvented by an acceptable amount of retries.
-
-3. Only works with MongoDB’s (default) “WiredTiger” storage engine. This is due to the fact that other engines product differently structured error types which do not contain the necessary index information.
 
 ## Installation
 
@@ -44,9 +40,9 @@ $ yarn add mongoose-slugger-plugin
 
 ## Usage
 
-**Note:** A complete, working example is available in [this](https://github.com/qqilihq/mongoose-slugger-demo) repository.
-
 ```javascript
+import { sluggerPlugin } from 'mongoose-slugger-plugin';
+
 const schema = new mongoose.Schema({
   firstname: String,
   lastname: String,
@@ -58,8 +54,8 @@ const schema = new mongoose.Schema({
 // here, the slugs must be unique for each city
 schema.index({ city: 1, slug: 1 }, { name: 'city_slug', unique: true });
 
-// create the configuration
-const sluggerOptions = new slugger.SluggerOptions({
+// add the plugin
+schema.plugin(sluggerPlugin, {
   // the property path which stores the slug value
   slugPath: 'slug',
   // specify the properties which will be used for generating the slug
@@ -70,16 +66,10 @@ const sluggerOptions = new slugger.SluggerOptions({
   index: 'city_slug'
 });
 
-// add the plugin
-schema.plugin(slugger.plugin, sluggerOptions);
-
-let Model = mongoose.model('MyModel', schema);
-
-// make sure to wrap the Mongoose model
-Model = slugger.wrap(Model);
+const Model = mongoose.model('MyModel', schema);
 ```
 
-**maxLength:** can be explicitly specified in the `sluggerOptions`. This plugin will read the maximum allowed length from mongo `schema` or `sluggerOptions`.
+`maxLength` can be explicitly specified in the plugin options. This plugin will read the maximum allowed length from Mongoose `schema` or the plugin options.
 
 ## Development
 
