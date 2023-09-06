@@ -592,16 +592,25 @@ describe('slugger', () => {
       });
     });
 
-    it('limax character mapping', () => {
-      const unmappedCharacters: string[] = [];
-      for (let idx = 0; idx < 65535; idx++) {
-        const char = String.fromCharCode(idx);
-        const slugged = limax(char);
-        if (char === slugged) {
-          unmappedCharacters.push(char);
+    describe('limax (fixed)', () => {
+      it('limax character mapping', () => {
+        const unmappedCharacters: string[] = [];
+        for (let idx = 0; idx < 65535; idx++) {
+          const char = String.fromCharCode(idx);
+          const slugged = utils.limaxFixed(char);
+          if (char === slugged) {
+            unmappedCharacters.push(char);
+          }
         }
-      }
-      expect(unmappedCharacters.join('')).toEqual('0123456789_abcdefghijklmnopqrstuvwxyz');
+        expect(unmappedCharacters.join('')).toEqual('0123456789abcdefghijklmnopqrstuvwxyz');
+      });
+
+      it('limax umlaut', () => {
+        expect(utils.limaxFixed('Müsli')).toEqual('muesli');
+        expect(utils.limaxFixed('Straße')).toEqual('strasse');
+        expect(utils.limaxFixed('ÄÖÜ-äöü')).toEqual('aeoeue-aeoeue');
+        expect(utils.limaxFixed('äää')).toEqual('aeaeae');
+      });
     });
   });
 });

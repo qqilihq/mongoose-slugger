@@ -92,7 +92,7 @@ export function createDefaultGenerator(paths: string | string[]): slugger.Genera
   return (doc: HydratedDocument<any>, attempt: number, maxLength?: number) => {
     const values = ([] as string[]).concat(paths).map(path => doc.get(path) as string);
     // replace underscore with hyphen
-    const slug = limax(values.join('-'), { custom: { _: '-' } });
+    const slug = limaxFixed(values.join('-'));
     const suffix = attempt > 0 ? `-${attempt + 1}` : '';
     let trimmedSlug = slug;
     if (typeof maxLength === 'number') {
@@ -159,4 +159,21 @@ export function checkMongoDBVersion(status: unknown): void {
   if (semver.lt(version, '4.2.0')) {
     throw new Error(`At least MongoDB version 4.2.0 is required, actual version is ${version}`);
   }
+}
+
+export function limaxFixed(input: string): string {
+  // https://github.com/lovell/limax/issues/50
+  const fixedMapping = {
+    ä: 'ae',
+    Ä: 'Ae',
+    ö: 'oe',
+    Ö: 'Oe',
+    ü: 'ue',
+    Ü: 'Ue'
+  };
+  let fixedInput = input;
+  for (const mapping of Object.entries(fixedMapping)) {
+    fixedInput = fixedInput.replaceAll(mapping[0], mapping[1]);
+  }
+  return limax(fixedInput, { custom: { _: '-' } });
 }
