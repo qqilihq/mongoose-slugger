@@ -386,6 +386,35 @@ describe('slugger', () => {
       });
 
       it.todo('correctly propagates error which is not caused by duplicate keys');
+
+      it('creates slugs on simultaneous saves', async () => {
+        const promises = [];
+        for (let i = 0; i < 10; i++) {
+          promises.push(
+            Model.create({
+              firstname: 'john',
+              lastname: 'doe',
+              city: 'memphis',
+              country: 'usa',
+              email: `test-${i}@example.com`
+            })
+          );
+        }
+        await Promise.all(promises);
+        const docs = await Model.find({}).sort({ slug: 1 });
+        expect(docs.map(doc => doc.slug)).toEqual([
+          'john-doe',
+          'john-doe-10',
+          'john-doe-2',
+          'john-doe-3',
+          'john-doe-4',
+          'john-doe-5',
+          'john-doe-6',
+          'john-doe-7',
+          'john-doe-8',
+          'john-doe-9'
+        ]);
+      });
     });
 
     describe('promises using `document.save`', () => {
