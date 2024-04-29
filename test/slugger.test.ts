@@ -62,21 +62,21 @@ describe('slugger', () => {
   describe('options validation', () => {
     it('throws when creating config with missing object', () => {
       // @ts-expect-error constructor requires argument
-      expect(() => new utils.validateOptions()).toThrowError(/options are missing./);
+      expect(() => new utils.validateOptions()).toThrow(/options are missing./);
     });
 
     it('throws error when configuration is missing', () => {
-      expect(() => utils.validateOptions()).toThrowError(/options are missing./);
+      expect(() => utils.validateOptions()).toThrow(/options are missing./);
     });
 
     it('throws error when neither `generateFrom` is given', () => {
       // @ts-expect-error argument missing
-      expect(() => new utils.validateOptions({ index: 'slug' })).toThrowError(/`generateFrom` is missing./);
+      expect(() => new utils.validateOptions({ index: 'slug' })).toThrow(/`generateFrom` is missing./);
     });
 
     it('throws error when index is missing', () => {
       // @ts-expect-error `index` argument is missing
-      expect(() => new utils.validateOptions({})).toThrowError(/`index` is missing./);
+      expect(() => new utils.validateOptions({})).toThrow(/`index` is missing./);
     });
 
     it('throws error when specified index does not exist', () => {
@@ -85,7 +85,7 @@ describe('slugger', () => {
         generateFrom: 'name',
         index: 'does_not_exist'
       };
-      expect(() => sluggerPlugin(schema, sluggerOptions)).toThrowError(
+      expect(() => sluggerPlugin(schema, sluggerOptions)).toThrow(
         /schema contains no index with name 'does_not_exist'./
       );
     });
@@ -98,7 +98,7 @@ describe('slugger', () => {
         index: 'slug'
       };
       schema.plugin(sluggerPlugin, sluggerOptions);
-      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrowError(/slugger was added more than once./);
+      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrow(/slugger was added more than once./);
     });
 
     it('throws error when index is not unique', () => {
@@ -108,23 +108,23 @@ describe('slugger', () => {
         generateFrom: 'name',
         index: 'name'
       };
-      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrowError(/the index 'name' is not unique./);
+      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrow(/the index 'name' is not unique./);
     });
 
     it('throws error when `maxAttempts` is less than one', () => {
-      expect(() => utils.validateOptions({ generateFrom: 'name', index: 'name', maxAttempts: 0 })).toThrowError(
+      expect(() => utils.validateOptions({ generateFrom: 'name', index: 'name', maxAttempts: 0 })).toThrow(
         /`maxAttempts` must be at least one./
       );
     });
 
     it('throws error when `generateFrom` is invalid type', () => {
-      expect(() => utils.validateOptions({ generateFrom: 1, index: 'name' })).toThrowError(
+      expect(() => utils.validateOptions({ generateFrom: 1, index: 'name' })).toThrow(
         /`generateFrom` must be a string, array, or function./
       );
     });
 
     it('throws error when `maxLength` is less than one', () => {
-      expect(() => utils.validateOptions({ generateFrom: 'name', index: 'name', maxLength: 0 })).toThrowError(
+      expect(() => utils.validateOptions({ generateFrom: 'name', index: 'name', maxLength: 0 })).toThrow(
         /`maxLength` must be at least one./
       );
     });
@@ -136,7 +136,7 @@ describe('slugger', () => {
         index: 'name',
         slugPath: 'does_not_exist'
       };
-      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrowError(
+      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrow(
         /the slug path 'does_not_exist' does not exist in the schema./
       );
     });
@@ -149,7 +149,7 @@ describe('slugger', () => {
         index: 'name_index',
         slugPath: 'slug'
       };
-      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrowError(
+      expect(() => schema.plugin(sluggerPlugin, sluggerOptions)).toThrow(
         /the index 'name_index' does not contain the slug path 'slug'./
       );
     });
@@ -314,7 +314,7 @@ describe('slugger', () => {
             }),
             sluggerOptions
           )
-        ).rejects.toThrowError('Reached 10 attempts without being able to insert. Giving up.');
+        ).rejects.toThrow('Reached 10 attempts without being able to insert. Giving up.');
       });
     });
 
@@ -371,16 +371,14 @@ describe('slugger', () => {
             email: 'john.dope@example.com',
             slug: 'john'
           })
-        ).rejects.toThrowError(
+        ).rejects.toThrow(
           'E11000 duplicate key error collection: test.slugmodels index: city_country_slug dup key: { city: "memphis", country: "usa", slug: "john" }'
         );
       });
 
       it('correctly propagates error which is caused by duplicate on different index', async () => {
         await Model.create({ firstname: 'john', lastname: 'doe', email: 'john@example.com' });
-        await expect(
-          Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' })
-        ).rejects.toThrowError(
+        await expect(Model.create({ firstname: 'john', lastname: 'dope', email: 'john@example.com' })).rejects.toThrow(
           '11000 duplicate key error collection: test.slugmodels index: email dup key: { email: "john@example.com" }'
         );
       });
@@ -464,14 +462,14 @@ describe('slugger', () => {
 
       it('throws when same slugs are generated within one save cycle using `Model.create`', async () => {
         await Model2.create({ firstname: 'john' });
-        await expect(() => Model2.create({ firstname: 'john' })).rejects.toThrowError(
+        await expect(() => Model2.create({ firstname: 'john' })).rejects.toThrow(
           new SluggerError("Already attempted slug 'john' 3 times before. Giving up.")
         );
       });
 
       it('throws when same slugs are generated within one save cycle using `document.save`', async () => {
         await Model2.create({ firstname: 'john' });
-        await expect(() => new Model2({ firstname: 'john' }).save()).rejects.toThrowError(
+        await expect(() => new Model2({ firstname: 'john' }).save()).rejects.toThrow(
           new SluggerError("Already attempted slug 'john' 3 times before. Giving up.")
         );
       });
@@ -637,18 +635,18 @@ describe('slugger', () => {
         expect(() => utils.checkMongoDBVersion({ version: '4.2.0' })).not.toThrow();
       });
       it('throws with too old version', () => {
-        expect(() => utils.checkMongoDBVersion({ version: '4.0.28' })).toThrowError(
+        expect(() => utils.checkMongoDBVersion({ version: '4.0.28' })).toThrow(
           'At least MongoDB version 4.2.0 is required, actual version is 4.0.28'
         );
       });
       it('throws on null argument', () => {
-        expect(() => utils.checkMongoDBVersion(null)).toThrowError('`status` is null or not an object');
+        expect(() => utils.checkMongoDBVersion(null)).toThrow('`status` is null or not an object');
       });
       it('throws on missing version property', () => {
-        expect(() => utils.checkMongoDBVersion({})).toThrowError('`status.version` is missing');
+        expect(() => utils.checkMongoDBVersion({})).toThrow('`status.version` is missing');
       });
       it('throws if version is not string', () => {
-        expect(() => utils.checkMongoDBVersion({ version: 1 })).toThrowError('`status.version` is not a string');
+        expect(() => utils.checkMongoDBVersion({ version: 1 })).toThrow('`status.version` is not a string');
       });
     });
 
