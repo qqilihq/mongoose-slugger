@@ -1,4 +1,4 @@
-import { Schema, SaveOptions, HydratedDocument } from 'mongoose';
+import { Schema, SaveOptions, HydratedDocument, Model } from 'mongoose';
 import { MongoError } from 'mongodb';
 import * as slugger from './slugger';
 import limax from 'limax';
@@ -176,4 +176,16 @@ export function limaxFixed(input: string): string {
     fixedInput = fixedInput.replaceAll(mapping[0], mapping[1]);
   }
   return limax(fixedInput, { custom: { _: '-' } });
+}
+
+// weird way of checking for the proper type,
+// instanceof etc. doesn't really work and I
+// couldn’t figure out why
+export function isModel(model: unknown): model is Model<unknown> {
+  return (
+    typeof model === 'function' &&
+    typeof model.prototype !== 'undefined' &&
+    '$isMongooseModelPrototype' in model.prototype &&
+    model.prototype.$isMongooseModelPrototype
+  );
 }

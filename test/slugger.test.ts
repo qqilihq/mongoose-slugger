@@ -588,6 +588,37 @@ describe('slugger', () => {
         expect(doc5.slug).toEqual('document-5');
       });
     });
+
+    describe('works on initial save', () => {
+      let TestModel: mongoose.Model<any>;
+
+      beforeAll(async () => {
+        const schema = new mongoose.Schema({
+          firstname: String,
+          slug: String
+        });
+
+        schema.index({ slug: 1 }, { name: 'slug', unique: true });
+
+        schema.plugin(sluggerPlugin, {
+          slugPath: 'slug',
+          generateFrom: 'firstname',
+          index: 'slug'
+        });
+
+        TestModel = mongoose.model(`TestModel_${Date.now()}`, schema);
+        await TestModel.ensureIndexes();
+      });
+
+      it('does not throw duplicate error on first save (concerns the “wrap” functionality)', async () => {
+        // (1) add one document to DB without Mongoose
+        await TestModel.collection.insertOne({ firstname: 'Bob', slug: 'bob' });
+        // (2) before this fix, the following call would not use the slugger logic,
+        //     as the modified save function would only applied *after* the first call
+        const savedDocument = await TestModel.create({ firstname: 'Bob' });
+        expect(savedDocument.slug).toEqual('bob-2');
+      });
+    });
   });
 
   describe('utilities', () => {
@@ -639,6 +670,19 @@ describe('slugger', () => {
         expect(utils.limaxFixed('Straße')).toEqual('strasse');
         expect(utils.limaxFixed('ÄÖÜ-äöü')).toEqual('aeoeue-aeoeue');
         expect(utils.limaxFixed('äää')).toEqual('aeaeae');
+      });
+    });
+
+    describe('isModel', () => {
+      it('returns false if not a Mongoose model', () => {
+        expect(utils.isModel(undefined)).toEqual(false);
+        expect(utils.isModel(null)).toEqual(false);
+        expect(utils.isModel('string')).toEqual(false);
+        expect(utils.isModel({})).toEqual(false);
+        expect(utils.isModel(() => {})).toEqual(false);
+      });
+      it('returns true if a Mongoose model', () => {
+        expect(utils.isModel(Model)).toEqual(true);
       });
     });
   });

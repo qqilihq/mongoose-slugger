@@ -1,4 +1,4 @@
-import { Schema, Model, SaveOptions, Document } from 'mongoose';
+import { Schema, SaveOptions } from 'mongoose';
 import * as utils from './sluggerUtils';
 
 /**
@@ -131,9 +131,6 @@ export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions
   }
 
   schema.pre('validate', function (next) {
-    // wrap the `save` function
-    applySaveWrap(this, options);
-
     let slugAttachment = (this as any)[utils.attachmentPropertyName] as utils.SlugDocumentAttachment;
     // only generate/retry slugs, when no slug
     // is explicitly given in the document
@@ -155,8 +152,12 @@ export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions
   // only check the DB version *once* on first call
   let hasCheckedMongoDB = false;
 
-  function applySaveWrap(document: Document<any>, options: SluggerOptions<any>) {
-    const model = document.constructor as Model<any>;
+  // set up the wrapped save functions;
+  // see: https://github.com/Automattic/mongoose/blob/d51173a400c8d28b7bf598c5bacb7335e9591f78/lib/model.js#L1341
+  schema.on('init', (model: unknown) => {
+    if (!utils.isModel(model)) {
+      throw new Error('Expected a model');
+    }
 
     if (typeof model.prototype[utils.delegatedSaveFunction] !== 'undefined') {
       return; // already wrapped
@@ -175,5 +176,5 @@ export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions
     // Since Mongoose 6 there’s `$save` which is mostly used instead of `save`
     // https://github.com/Automattic/mongoose/commit/0270b515580eaccbc71b6fbf4af2fa8d2ee10471
     model.prototype.$save = model.prototype.save;
-  }
+  });
 }
