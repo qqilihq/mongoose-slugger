@@ -32,14 +32,14 @@
   },
   "dependencies": {
     "limax": "^4.1.0",
-    "semver": "^7.5.0"
+    "semver": "^7.6.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.7.1",
     "@shelf/jest-mongodb": "^4.1.7",
     "@types/jest": "^29.5.7",
     "@types/node": "^16",
-    "@types/semver": "^7.5.4",
+    "@types/semver": "^7.5.8",
     "@typescript-eslint/eslint-plugin": "^6.9.1",
     "@typescript-eslint/parser": "^6.9.1",
     "cross-env": "^7.0.3",
