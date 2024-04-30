@@ -1,8 +1,6 @@
-import { Schema, SaveOptions, HydratedDocument, Model } from 'mongoose';
-import { MongoError } from 'mongodb';
+import { Schema, SaveOptions, HydratedDocument, Model, mongo } from 'mongoose';
 import * as slugger from './slugger';
 import limax from 'limax';
-import * as mongodb from 'mongodb';
 import * as semver from 'semver';
 
 // internal utilities which are not meant to belong to the API
@@ -116,7 +114,7 @@ export function getSluggerPlugins(schema: Schema<any, any>): any[] {
   return (schema as any).plugins.filter((p: any) => p.fn === slugger.sluggerPlugin);
 }
 
-function isMongoError(e: unknown): e is MongoError {
+function isMongoError(e: unknown): e is mongo.MongoError {
   if (e == null || typeof e !== 'object') return false;
   if (!('name' in e)) return false;
   if (typeof e.name !== 'string') return false;
@@ -124,7 +122,7 @@ function isMongoError(e: unknown): e is MongoError {
   return ['MongoError', 'BulkWriteError', 'MongoServerError'].includes(e.name);
 }
 
-export async function checkMongoDB(db: mongodb.Db): Promise<void> {
+export async function checkMongoDB(db: mongo.Db): Promise<void> {
   checkMongoDBVersion(await db.admin().serverStatus());
 }
 
