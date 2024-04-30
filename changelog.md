@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.1.1] – 2024-04-30
+
+### Fixed
+- Ensure that slugger functionality is applied on first `save` invocation (before, the necessary hook would only be installed after `save` or corresponding functions were called once).
+
 ## [6.1.0] – 2023-11-02
 
 ### Changed
