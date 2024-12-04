@@ -122,7 +122,8 @@ function isMongoError(e: unknown): e is mongo.MongoError {
   return ['MongoError', 'BulkWriteError', 'MongoServerError'].includes(e.name);
 }
 
-export async function checkMongoDB(db: mongo.Db): Promise<void> {
+export async function checkMongoDB(db: mongo.Db | undefined): Promise<void> {
+  if (typeof db === 'undefined') throw new Error('db is undefined');
   checkMongoDBVersion(await db.admin().serverStatus());
 }
 
