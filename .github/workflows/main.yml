@@ -26,8 +26,7 @@ jobs:
           npm install -g yarn
           yarn install
           yarn run lint
-          # https://stackoverflow.com/a/52357797/388827
-          yarn run jest --ci --reporters=jest-junit --reporters=default --coverage
+          yarn run test --coverage
           yarn run build
 
       - uses: codecov/codecov-action@v4

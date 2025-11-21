@@ -6,5 +6,9 @@ export default defineConfig({
     globalSetup: './vitest.global-setup.ts',
     setupFiles: './vitest.setup.ts',
     pool: 'threads',
+    coverage: {
+      provider: 'v8',
+    },
+    reporters: ['default', 'junit'],
   },
 });
