@@ -6,14 +6,13 @@ node_modules/
 test/
 
 .editorconfig
-.eslintignore
-.eslintrc.js
 .gitignore
 .huskyrc.js
 .ncurc.js
 .prettierrc.js
 .yarnrc
 commitlint.config.js
+eslint.config.mjs
 junit.xml
 tsconfig.*
 vitest.config.ts
