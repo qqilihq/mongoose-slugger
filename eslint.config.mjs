@@ -19,10 +19,10 @@ export default defineConfig(
     rules: {
       // '@typescript-eslint/interface-name-prefix': [ 2, { prefixWithI: 'always' } ],
       // probably re-enable these later
-      '@typescript-eslint/ban-ts-comment': 0,
-      '@typescript-eslint/no-explicit-any': 0,
-      '@typescript-eslint/explicit-function-return-type': 0,
-      '@typescript-eslint/no-use-before-define': 0,
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/no-use-before-define': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
