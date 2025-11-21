@@ -75,7 +75,7 @@ const Model = mongoose.model('MyModel', schema);
 
 Install NPM dependencies with `yarn`.
 
-To execute the tests, run the `test` task. It starts a new MongoDB instance using [@shelf/jest-mongodb](https://github.com/shelfio/jest-mongodb) and then executes the test cases. The test coverage report can be found in `coverage/index.html`.
+To execute the tests, run the `test` task. It starts a new MongoDB instance using [mongodb-memory-server](https://github.com/typegoose/mongodb-memory-server) and then executes the test cases. The test coverage report can be found in `coverage/index.html`.
 
 Use [Volta](https://volta.sh) to automatically configure the proper Node version.
 
@@ -116,4 +116,4 @@ Pull requests are very welcome. Feel free to discuss bugs or new features by ope
 
 - - -
 
-Copyright Philipp Katz, [LineUpr GmbH](http://lineupr.com), 2018 – 2024
+Copyright Philipp Katz, [LineUpr GmbH](http://lineupr.com), 2018 – 2025

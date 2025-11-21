@@ -1,8 +1,8 @@
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import mongoose, { Schema } from 'mongoose';
 import { SluggerError, SluggerOptions, sluggerPlugin } from '../lib/slugger';
 import * as utils from '../lib/sluggerUtils';
 import limax from 'limax';
-import fs from 'fs';
 
 interface MyDocument {
   firstname: string;
@@ -52,11 +52,6 @@ describe('slugger', () => {
     schema.plugin(sluggerPlugin, sluggerOptions);
 
     Model = mongoose.model<MyDocument>('SlugModel', schema);
-  });
-
-  afterAll(async () => {
-    // https://github.com/shelfio/jest-mongodb/issues/214#issuecomment-659535865
-    await fs.promises.unlink(process.cwd() + '/globalConfig.json');
   });
 
   describe('options validation', () => {
@@ -227,10 +222,7 @@ describe('slugger', () => {
     });
   });
 
-  describe('saving to database', function () {
-    jest.setTimeout(10 * 1000);
-    // this.slow(1000);
-
+  describe('saving to database', { timeout: 10_000 }, () => {
     // mongoose.set('debug', true);
 
     beforeAll(async () => {
