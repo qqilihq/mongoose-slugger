@@ -675,5 +675,13 @@ describe('slugger', () => {
         expect(utils.isModel(Model)).toEqual(true);
       });
     });
+
+    describe('edge cases', () => {
+      it('no valid slug characters - fall back to _id', () => {
+        const doc = new Model({ firstname: ':-)', lastname: 'doe' });
+        const generator = utils.createDefaultGenerator('firstname');
+        expect(generator(doc, 0)).toEqual(String(doc._id));
+      });
+    });
   });
 });
