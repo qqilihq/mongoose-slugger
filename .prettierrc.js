@@ -4,4 +4,4 @@ module.exports = {
   // disable new v2 features
   trailingComma: 'none',
   arrowParens: 'avoid'
-}
+};

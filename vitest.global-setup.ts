@@ -12,7 +12,7 @@ let mongod: MongoMemoryServer;
 
 export async function setup(project: TestProject) {
   mongod = await MongoMemoryServer.create({
-    instance:{
+    instance: {
       // https://github.com/nodkz/mongodb-memory-server/issues/78
       // storageEngine: 'wiredTiger'
       storageEngine: 'ephemeralForTest'

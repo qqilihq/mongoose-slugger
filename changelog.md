@@ -8,27 +8,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## unreleased
 
 ### Breaking
+
 - Require at least NodeJS 20
 
 ### Changed
+
 - Use the document’s `_id` if no slug can be created (when slugifying the string doesn’t give any characters)
 
 ## [6.1.1] – 2024-04-30
 
 ### Fixed
+
 - Ensure that slugger functionality is applied on first `save` invocation (before, the necessary hook would only be installed after `save` or corresponding functions were called once).
 
 ## [6.1.0] – 2023-11-02
 
 ### Changed
+
 - Mongoose 8 compatibility
 
 ## [6.0.0] – 2023-09-06
 
 ### Changed
+
 - Mongoose 7 compatibility
 
 ### Breaking
+
 - Require Mongoose 7+
 - Require at least NodeJS 16
 - Restructure plugin options – `SluggerOptions` is an interface instead of a class now
@@ -38,46 +44,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [5.0.0] – 2023-09-05
 
 ### Changed
+
 - Mongoose 6 compatibility
 
 ### Breaking
+
 - Require Mongoose 6+
 
 ## [4.0.2] – 2023-05-15
 
 ### Fixed
+
 - Different fix for `Already attempted slug '…' before. Giving up.`
 
 ## [4.0.1] – 2023-05-15
 
 ### Fixed
+
 - Prevent error `Already attempted slug '…' before. Giving up.` which happened for strings ending in a numeric suffix
 
 ## [4.0.0] – 2023-04-28
 
 ### Breaking
+
 - Require at least MongoDB 4.2.0 (main motivation: consistent duplicate key error messages between WiredTiger and In-Memory engine - which in turn allows to run integration tests with the In-Memory engine now)
 
 ## [3.1.0] – 2023-01-25
 
 ### Added
+
 - Add maxLength for the slug
 
 ## [3.0.3] – 2021-09-18
 
 ### Fixed
-* Update dependencies
+
+- Update dependencies
 
 ## [3.0.2] – 2021-01-15
 
 ### Fixed
-* Proper generic return type for `wrap` function (see [#21](https://github.com/qqilihq/mongoose-slugger/issues/21))
+
+- Proper generic return type for `wrap` function (see [#21](https://github.com/qqilihq/mongoose-slugger/issues/21))
 
 ## [3.0.1] – 2020-09-19
+
 ### Fixed
-* Replace underscores with hyphens
+
+- Replace underscores with hyphens
 
 ## [3.0.0] – 2020-03-29
+
 ## [2.0.0] – 2018-04-29
+
 ## [1.0.1] – 2018-04-21
+
 ## [1.0.0] – 2018-04-21

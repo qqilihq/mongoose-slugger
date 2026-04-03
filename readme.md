@@ -18,13 +18,13 @@ Model.create({ firstname: 'john', lastname: 'doe' }); // slug = 'john-doe-2'
 
 There exist several similar Mongoose plugins already, however, none of them fit our requirements. These are:
 
-* We do not want to maintain a separate collection for storing any state.
+- We do not want to maintain a separate collection for storing any state.
 
-* Saving with a generated slug must work atomically. This means: First performing a query to check whether a slug is not yet taken and then saving a document is not acceptable!
+- Saving with a generated slug must work atomically. This means: First performing a query to check whether a slug is not yet taken and then saving a document is not acceptable!
 
-* We need the ability for “scoped” slugs. This means: Slugs can be unique with regards to other document properties (e.g. have unique person name slugs in regards to a place, …)
+- We need the ability for “scoped” slugs. This means: Slugs can be unique with regards to other document properties (e.g. have unique person name slugs in regards to a place, …)
 
-* It must be possible to specify the slug generation strategy.
+- It must be possible to specify the slug generation strategy.
 
 ## Caveats
 
@@ -95,25 +95,22 @@ $ npm publish
 
 … where `<update_type>` is one of `patch`, `minor`, or `major`. This will update the `package.json`, and create a tagged Git commit with the version number.
 
-
 ## Why yet Another Tool?
 
 There’s a plethora of similar plugins, most of them old and abandoned though. Here’s a list, sorted by recent activity (first was updated recently when writing this):
 
-* https://github.com/talha-asad/mongoose-url-slugs
-* https://github.com/ladjs/mongoose-slug-plugin
-* https://github.com/Kubide/mongoose-slug-generator
-* https://github.com/budiadiono/mongoose-slug-hero
-* https://github.com/dariuszp/mongoose-sluggable
-* https://github.com/ChimboteDevClub/mongoose-slug-unique
-* https://github.com/punkave/mongoose-uniqueslugs
-
-
+- https://github.com/talha-asad/mongoose-url-slugs
+- https://github.com/ladjs/mongoose-slug-plugin
+- https://github.com/Kubide/mongoose-slug-generator
+- https://github.com/budiadiono/mongoose-slug-hero
+- https://github.com/dariuszp/mongoose-sluggable
+- https://github.com/ChimboteDevClub/mongoose-slug-unique
+- https://github.com/punkave/mongoose-uniqueslugs
 
 ## Contributing
 
 Pull requests are very welcome. Feel free to discuss bugs or new features by opening a new [issue](https://github.com/qqilihq/mongoose-slugger/issues).
 
-- - -
+---
 
 Copyright Philipp Katz, [LineUpr GmbH](http://lineupr.com), 2018 – 2025
