@@ -94,6 +94,10 @@ export function createDefaultGenerator(paths: string | string[]): slugger.Genera
     // in case no slug was generated, fall back to the document _id
     if (slug.length === 0) {
       slug = String(doc._id);
+      if (typeof maxLength === 'number' && maxLength < slug.length) {
+        // if maxLength is shorter than the ObjectId string, keep the end (more entropy)
+        slug = slug.substring(slug.length - maxLength);
+      }
     }
     const suffix = attempt > 0 ? `-${attempt + 1}` : '';
     let trimmedSlug = slug;

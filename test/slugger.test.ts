@@ -682,6 +682,12 @@ describe('slugger', () => {
         const generator = utils.createDefaultGenerator('firstname');
         expect(generator(doc, 0)).toEqual(String(doc._id));
       });
+
+      it('no valid slug characters - fall back to _id in combination with maxLength', () => {
+        const doc = new Model({ firstname: ':-)', lastname: 'doe' });
+        const generator = utils.createDefaultGenerator('firstname');
+        expect(generator(doc, 0, 10)).toEqual(String(doc._id).substring(24 - 10));
+      });
     });
   });
 });
