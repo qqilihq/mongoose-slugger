@@ -170,20 +170,7 @@ export function checkMongoDBVersion(status: unknown): void {
 }
 
 export function limaxFixed(input: string): string {
-  // https://github.com/lovell/limax/issues/50
-  const fixedMapping = {
-    ä: 'ae',
-    Ä: 'Ae',
-    ö: 'oe',
-    Ö: 'Oe',
-    ü: 'ue',
-    Ü: 'Ue'
-  };
-  let fixedInput = input;
-  for (const mapping of Object.entries(fixedMapping)) {
-    fixedInput = fixedInput.replaceAll(mapping[0], mapping[1]);
-  }
-  return limax(fixedInput, { custom: { _: '-' } });
+  return limax(input, { custom: { _: '-' } });
 }
 
 // weird way of checking for the proper type,

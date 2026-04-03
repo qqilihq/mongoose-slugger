@@ -30,7 +30,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "limax": "^4.1.0",
+    "limax": "^4.2.3",
     "semver": "^7.6.0"
   },
   "devDependencies": {
