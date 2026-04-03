@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Use the document’s `_id` if no slug can be created (when slugifying the string doesn’t give any characters)
+- Update `limax` to version 4.2.3
 
 ## [6.1.1] – 2024-04-30
 
