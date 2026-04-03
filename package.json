@@ -35,14 +35,14 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",
-    "@eslint/js": "^9.39.1",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^20",
     "@types/semver": "^7.5.8",
     "@vitest/coverage-v8": "^4.0.13",
     "cross-env": "^7.0.3",
-    "eslint": "^9.39.1",
+    "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-prettier": "^5.5.5",
     "husky": "^8.0.3",
     "mongodb": "^7.1.1",
     "mongodb-memory-server-global": "^11.0.1",
@@ -51,7 +51,7 @@
     "prettier": "^3.6.2",
     "pretty-quick": "^4.0.0",
     "typescript": "^5.3.3",
-    "typescript-eslint": "^8.47.0",
+    "typescript-eslint": "^8.58.0",
     "vitest": "^4.0.13"
   },
   "peerDependencies": {
