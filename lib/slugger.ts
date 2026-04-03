@@ -130,7 +130,7 @@ export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions
     throw new Error(`the index '${options.index}' does not contain the slug path '${slugPath}'.`);
   }
 
-  schema.pre('validate', function (next) {
+  schema.pre('validate', function () {
     let slugAttachment = (this as any)[utils.attachmentPropertyName] as utils.SlugDocumentAttachment;
     // only generate/retry slugs, when no slug
     // is explicitly given in the document
@@ -146,7 +146,6 @@ export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions
       const slug = generator(this, slugAttachment.slugAttempts.length, maxlength);
       this.set(slugPath, slug);
     }
-    next();
   });
 
   // only check the DB version *once* on first call
