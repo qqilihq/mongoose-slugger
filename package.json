@@ -27,7 +27,7 @@
     "build": "tsc -p tsconfig.build.json",
     "clean": "node -e \"['./coverage', './dist'].forEach(entry => require('fs').rmSync(entry, { recursive: true, force: true }));\"",
     "preversion": "run-s clean lint test build",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "dependencies": {
     "limax": "^4.2.3",
@@ -42,7 +42,7 @@
     "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
-    "husky": "^8.0.3",
+    "husky": "^9.1.7",
     "mongodb": "^7.1.1",
     "mongodb-memory-server-global": "^11.0.1",
     "mongoose": "^9.0.0",
