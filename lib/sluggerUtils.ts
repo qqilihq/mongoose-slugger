@@ -150,6 +150,7 @@ export async function checkMongoDB(db: mongo.Db | undefined): Promise<void> {
  * * 5.0.16 - OK!
  * * 6.0.5 - OK!
  * * 7.0.12 - OK!
+ * * 8.2.6 - OK!
  *
  * @param status The status object which contains a version property.
  */
