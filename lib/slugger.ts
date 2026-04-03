@@ -130,7 +130,7 @@ export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions
     throw new Error(`the index '${options.index}' does not contain the slug path '${slugPath}'.`);
   }
 
-  schema.pre('validate', function (next) {
+  schema.pre('validate', function () {
     let slugAttachment = (this as any)[utils.attachmentPropertyName] as utils.SlugDocumentAttachment;
     // only generate/retry slugs, when no slug
     // is explicitly given in the document
@@ -146,7 +146,6 @@ export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions
       const slug = generator(this, slugAttachment.slugAttempts.length, maxlength);
       this.set(slugPath, slug);
     }
-    next();
   });
 
   // only check the DB version *once* on first call
@@ -154,7 +153,7 @@ export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions
 
   // set up the wrapped save functions;
   // see: https://github.com/Automattic/mongoose/blob/d51173a400c8d28b7bf598c5bacb7335e9591f78/lib/model.js#L1341
-  schema.on('init', (model: unknown) => {
+  (schema as any).on('init', (model: unknown) => {
     if (!utils.isModel(model)) {
       throw new Error('Expected a model');
     }

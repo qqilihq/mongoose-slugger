@@ -27,42 +27,40 @@
     "build": "tsc -p tsconfig.build.json",
     "clean": "node -e \"['./coverage', './dist'].forEach(entry => require('fs').rmSync(entry, { recursive: true, force: true }));\"",
     "preversion": "run-s clean lint test build",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "dependencies": {
     "limax": "^4.2.3",
-    "semver": "^7.6.0"
+    "semver": "^7.7.4"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.8.1",
-    "@eslint/js": "^9.39.1",
+    "@commitlint/cli": "^20.5.0",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^20",
-    "@types/semver": "^7.5.8",
-    "@vitest/coverage-v8": "^4.0.13",
-    "cross-env": "^7.0.3",
-    "eslint": "^9.39.1",
+    "@types/semver": "^7.7.1",
+    "@vitest/coverage-v8": "^4.1.2",
+    "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "husky": "^8.0.3",
-    "mongodb": "^6.5.0",
-    "mongodb-memory-server-global": "^9.2.0",
-    "mongoose": "^8.0.0",
+    "eslint-plugin-prettier": "^5.5.5",
+    "husky": "^9.1.7",
+    "mongodb": "^7.1.1",
+    "mongodb-memory-server-global": "^11.0.1",
+    "mongoose": "^9.0.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^3.6.2",
-    "pretty-quick": "^4.0.0",
-    "typescript": "^5.3.3",
-    "typescript-eslint": "^8.47.0",
-    "vitest": "^4.0.13"
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.58.0",
+    "vitest": "^4.1.2"
   },
   "peerDependencies": {
-    "mongoose": "^7.0.0 || ^8.0.0"
+    "mongoose": "^7.0.0 || ^8.0.0 || ^9.0.0"
   },
   "engines": {
     "node": ">=20"
   },
   "config": {
     "mongodbMemoryServer": {
-      "version": "7.0.12"
+      "version": "8.2.6"
     }
   },
   "volta": {

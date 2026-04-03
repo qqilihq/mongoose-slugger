@@ -537,7 +537,9 @@ describe('slugger', () => {
 
     /** https://lineupr.sentry.io/issues/4184297415 */
     describe('generate slugs throws “Already attempted slug” error', () => {
-      let Model5: mongoose.Model<MyDocument>;
+      type DocumentType = { name: string; slug: string };
+
+      let Model5: mongoose.Model<DocumentType>;
 
       beforeAll(async () => {
         const schema5 = new mongoose.Schema({
@@ -556,7 +558,7 @@ describe('slugger', () => {
 
         schema5.plugin(sluggerPlugin, sluggerOptions5);
 
-        Model5 = mongoose.model<MyDocument>('SlugModel5', schema5);
+        Model5 = mongoose.model<DocumentType>('SlugModel5', schema5);
         await Model5.ensureIndexes();
       });
 
