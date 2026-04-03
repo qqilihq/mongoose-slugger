@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking
 - Require at least NodeJS 20
 
+### Changed
+- Use the document’s `_id` if no slug can be created (when slugifying the string doesn’t give any characters)
+
 ## [6.1.1] – 2024-04-30
 
 ### Fixed
