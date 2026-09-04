@@ -59,6 +59,9 @@
   },
   "include": [
     "lib",
-    "test"
+    "test",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "vitest.global-setup.ts"
   ]
 }
