@@ -23,12 +23,13 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "yarn run lint:eslint && yarn run lint:types",
+    "lint": "pnpm run lint:eslint && pnpm run lint:types",
     "lint:eslint": "eslint ./lib ./test",
     "lint:types": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "clean": "node -e \"['./coverage', './dist'].forEach(entry => require('fs').rmSync(entry, { recursive: true, force: true }));\"",
-    "preversion": "yarn clean && yarn lint && yarn test && yarn build",
+    "preversion": "pnpm run clean && pnpm run lint && pnpm test && pnpm run build",
+    "release": "pnpm version --message \"chore: release %s\"",
     "prepare": "husky"
   },
   "dependencies": {
@@ -57,15 +58,20 @@
     "mongoose": "^7.0.0 || ^8.0.0 || ^9.0.0"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22",
+    "pnpm": ">=11"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.20.0",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@11.25.0",
   "config": {
     "mongodbMemoryServer": {
       "version": "8.2.6"
     }
-  },
-  "volta": {
-    "node": "24.20.0",
-    "yarn": "1.22.19"
   }
 }

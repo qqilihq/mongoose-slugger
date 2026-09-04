@@ -22,18 +22,22 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v5
 
+      # reads the pnpm version from the `packageManager` field
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js environment
         uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node-version }}
-          cache: yarn
+          cache: pnpm
 
       - name: Lint, test, and build
         run: |
-          yarn install --frozen-lockfile
-          yarn run lint
-          yarn run test --coverage
-          yarn run build
+          pnpm install --frozen-lockfile
+          pnpm run lint
+          pnpm run test --coverage
+          pnpm run build
 
       # only report coverage once, rather than once per matrix entry
       - uses: codecov/codecov-action@v5
