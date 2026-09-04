@@ -23,7 +23,9 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint --ext .ts ./lib ./test",
+    "lint": "yarn run lint:eslint && yarn run lint:types",
+    "lint:eslint": "eslint ./lib ./test",
+    "lint:types": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "clean": "node -e \"['./coverage', './dist'].forEach(entry => require('fs').rmSync(entry, { recursive: true, force: true }));\"",
     "preversion": "yarn clean && yarn lint && yarn test && yarn build",
