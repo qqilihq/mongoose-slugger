@@ -151,8 +151,12 @@ export function sluggerPlugin(schema: Schema<any, any>, options?: SluggerOptions
   // only check the DB version *once* on first call
   let hasCheckedMongoDB = false;
 
-  // set up the wrapped save functions;
-  // see: https://github.com/Automattic/mongoose/blob/d51173a400c8d28b7bf598c5bacb7335e9591f78/lib/model.js#L1341
+  // The plugin is applied to a schema, but the wrapper belongs on the model:
+  // Mongoose defines `save` once on the shared `Model.prototype`, so assigning
+  // to a specific model's prototype shadows it for that model alone. Mongoose
+  // hands us the compiled model via the schema's `init` event (emitted from
+  // `Model.init()`), which is the earliest point at which it exists. The
+  // original is kept on `delegatedSaveFunction` so the retry loop can call it.
   (schema as any).on('init', (model: unknown) => {
     if (!utils.isModel(model)) {
       throw new Error('Expected a model');

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking
 
-- Require at least NodeJS 20
+- Require at least NodeJS 22
 
 ### Changed
 

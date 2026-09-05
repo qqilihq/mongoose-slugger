@@ -35,7 +35,7 @@ There exist several similar Mongoose plugins already, however, none of them fit 
 ## Installation
 
 ```shell
-$ yarn add mongoose-slugger-plugin
+$ pnpm add mongoose-slugger-plugin
 ```
 
 ## Usage
@@ -73,11 +73,13 @@ const Model = mongoose.model('MyModel', schema);
 
 ## Development
 
-Install NPM dependencies with `yarn`.
+Install dependencies with `pnpm install`.
 
 To execute the tests, run the `test` task. It starts a new MongoDB instance using [mongodb-memory-server](https://github.com/typegoose/mongodb-memory-server) and then executes the test cases. The test coverage report can be found in `coverage/index.html`.
 
-Use [Volta](https://volta.sh) to automatically configure the proper Node version.
+pnpm downloads and uses the Node version pinned in `devEngines.runtime`, so no separate
+version manager is needed. The same version is in `.node-version` for editors and other
+tools that read it.
 
 For the best development experience, make sure that your editor supports [ESLint](https://eslint.org/docs/user-guide/integrations) and [EditorConfig](http://editorconfig.org).
 
@@ -88,12 +90,16 @@ Linting of code and commit message happens on commit via [Husky](https://github.
 Commit all changes and run the following:
 
 ```shell
-$ npm login
-$ yarn version --<update_type>
-$ npm publish
+$ pnpm login
+$ pnpm run release <update_type>
+$ pnpm publish
 ```
 
 … where `<update_type>` is one of `patch`, `minor`, or `major`. This will update the `package.json`, and create a tagged Git commit with the version number.
+
+Use `pnpm`, not `npm`, for these. Because the project pins its Node version through
+`devEngines.runtime`, npm refuses to run anything here (`EBADDEVENGINES`) unless the
+ambient Node happens to match that exact version.
 
 ## Why yet Another Tool?
 

@@ -6,6 +6,9 @@
   "main": "dist/slugger.js",
   "types": "dist/slugger.d.ts",
   "license": "MIT",
+  "files": [
+    "dist"
+  ],
   "bugs": {
     "url": "https://github.com/qqilihq/mongoose-slugger/issues"
   },
@@ -23,10 +26,14 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint --ext .ts ./lib ./test",
+    "lint": "pnpm run lint:eslint && pnpm run lint:types && pnpm run lint:knip",
+    "lint:eslint": "eslint .",
+    "lint:knip": "knip",
+    "lint:types": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "clean": "node -e \"['./coverage', './dist'].forEach(entry => require('fs').rmSync(entry, { recursive: true, force: true }));\"",
-    "preversion": "yarn clean && yarn lint && yarn test && yarn build",
+    "preversion": "pnpm run clean && pnpm run lint && pnpm test && pnpm run build",
+    "release": "pnpm version --message \"chore: release %s\"",
     "prepare": "husky"
   },
   "dependencies": {
@@ -36,14 +43,16 @@
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",
     "@eslint/js": "^10.0.1",
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^4.1.2",
+    "@vitest/eslint-plugin": "^1.6.27",
     "eslint": "^10.1.0",
-    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^18.3.0",
     "eslint-plugin-prettier": "^5.5.5",
     "husky": "^9.1.7",
-    "mongodb": "^7.1.1",
+    "knip": "^6.34.0",
+    "lint-staged": "^17.4.1",
     "mongodb-memory-server-global": "^11.0.1",
     "mongoose": "^9.0.0",
     "prettier": "^3.8.1",
@@ -55,15 +64,20 @@
     "mongoose": "^7.0.0 || ^8.0.0 || ^9.0.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22",
+    "pnpm": ">=11"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.20.0",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@11.25.0",
   "config": {
     "mongodbMemoryServer": {
       "version": "8.2.6"
     }
-  },
-  "volta": {
-    "node": "20.19.5",
-    "yarn": "1.22.19"
   }
 }

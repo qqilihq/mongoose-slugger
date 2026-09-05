@@ -1,0 +1,6 @@
+# Single-package repository, so there is no `packages:` list here; this file
+# exists because pnpm 11 reads its settings from it.
+
+allowBuilds:
+  # downloads the MongoDB binary used by the tests during install
+  mongodb-memory-server-global: true
