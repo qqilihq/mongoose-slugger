@@ -35,7 +35,7 @@ There exist several similar Mongoose plugins already, however, none of them fit 
 ## Installation
 
 ```shell
-$ pnpm add mongoose-slugger-plugin
+$ npm install mongoose-slugger-plugin
 ```
 
 ## Usage
