@@ -24,7 +24,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "pnpm run lint:eslint && pnpm run lint:types && pnpm run lint:knip",
-    "lint:eslint": "eslint",
+    "lint:eslint": "eslint .",
     "lint:knip": "knip",
     "lint:types": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
