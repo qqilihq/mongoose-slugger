@@ -6,6 +6,9 @@
   "main": "dist/slugger.js",
   "types": "dist/slugger.d.ts",
   "license": "MIT",
+  "files": [
+    "dist"
+  ],
   "bugs": {
     "url": "https://github.com/qqilihq/mongoose-slugger/issues"
   },
