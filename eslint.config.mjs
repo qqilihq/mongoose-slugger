@@ -27,12 +27,10 @@ export default defineConfig(
       // supports three Mongoose majors, so deprecations are worth surfacing
       '@typescript-eslint/no-deprecated': 'warn',
 
-      // '@typescript-eslint/interface-name-prefix': [ 2, { prefixWithI: 'always' } ],
-      // probably re-enable these later
-      '@typescript-eslint/ban-ts-comment': 'off',
+      // These remain off: the plugin reaches into Mongoose internals (symbol-keyed
+      // properties on documents, `schema.plugins`, the schema's event emitter), which
+      // is genuinely untyped. See the tracking issue before re-enabling.
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/no-use-before-define': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',

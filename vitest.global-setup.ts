@@ -1,7 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server-global';
 import type { TestProject } from 'vitest/node';
 
-// @ts-ignore
 declare module 'vitest' {
   export interface ProvidedContext {
     MONGO_BASE_URI: string;
@@ -16,7 +15,6 @@ export async function setup(project: TestProject) {
       storageEngine: 'wiredTiger'
     }
   });
-  // @ts-ignore
   project.provide('MONGO_BASE_URI', mongod.getUri());
 }
 
