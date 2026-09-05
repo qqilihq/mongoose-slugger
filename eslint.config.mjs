@@ -1,11 +1,12 @@
 import eslint from '@eslint/js';
+import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 import eslintPluginN from 'eslint-plugin-n';
 import eslintPluginVitest from '@vitest/eslint-plugin';
 // includes eslint-config-prettier, so that does not need to be listed separately
 import eslintPluginPrettier from 'eslint-plugin-prettier/recommended';
 
-export default tseslint.config(
+export default defineConfig(
   {
     // compiled output; not source
     ignores: ['dist/**', 'coverage/**']
