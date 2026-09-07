@@ -65,8 +65,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # the floor declared in `engines.node`, and the current Active LTS
-        node-version: ['22.x', '24.x']
+        # `22.0.0` is the exact floor `engines.node: ">=22"` promises, not
+        # `22.x` -- which resolves to the newest 22 release and would let an
+        # API added later in the 22 line pass here while breaking a consumer
+        # on the version we actually claim to support. `24.x` is Active LTS.
+        node-version: ['22.0.0', '24.x']
 
     steps:
       - uses: actions/download-artifact@v4
