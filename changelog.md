@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
 ## [7.0.0] – 2026-09-05
 
 ### Breaking
@@ -102,3 +104,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1] – 2018-04-21
 
 ## [1.0.0] – 2018-04-21
+
+[unreleased]: https://github.com/qqilihq/mongoose-slugger/compare/v7.0.0...HEAD
+[7.0.0]: https://github.com/qqilihq/mongoose-slugger/compare/v6.1.1...v7.0.0
+[6.1.1]: https://github.com/qqilihq/mongoose-slugger/compare/v6.1.0...v6.1.1
+[6.1.0]: https://github.com/qqilihq/mongoose-slugger/compare/v6.0.0...v6.1.0
+[6.0.0]: https://github.com/qqilihq/mongoose-slugger/compare/v5.0.0...v6.0.0
+[5.0.0]: https://github.com/qqilihq/mongoose-slugger/compare/v4.0.2...v5.0.0
+[4.0.2]: https://github.com/qqilihq/mongoose-slugger/compare/v4.0.1...v4.0.2
+[4.0.1]: https://github.com/qqilihq/mongoose-slugger/compare/v4.0.0...v4.0.1
+[4.0.0]: https://github.com/qqilihq/mongoose-slugger/compare/v3.1.0...v4.0.0
+[3.1.0]: https://github.com/qqilihq/mongoose-slugger/compare/v3.0.3...v3.1.0
+[3.0.3]: https://github.com/qqilihq/mongoose-slugger/compare/v3.0.2...v3.0.3
+[3.0.2]: https://github.com/qqilihq/mongoose-slugger/compare/v3.0.1...v3.0.2
+[3.0.1]: https://github.com/qqilihq/mongoose-slugger/compare/v3.0.0...v3.0.1
+[3.0.0]: https://github.com/qqilihq/mongoose-slugger/compare/v2.0.0...v3.0.0
+[2.0.0]: https://github.com/qqilihq/mongoose-slugger/compare/v1.0.1...v2.0.0
+[1.0.1]: https://github.com/qqilihq/mongoose-slugger/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/qqilihq/mongoose-slugger/releases/tag/v1.0.0
