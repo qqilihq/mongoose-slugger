@@ -12,6 +12,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        # `22.0.0` is the exact floor `engines.node` promises, not `22.x`, which
+        # resolves to the newest 22 and would pass on APIs added later in the line
+        node-version: ['22.0.0', '24.x']
+
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v5
@@ -20,33 +27,41 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
-      # There is deliberately no Node version matrix here. pnpm substitutes the
-      # runtime pinned in `devEngines.runtime` for every `pnpm run`, ignoring
-      # whatever this step installed, so both legs of a matrix would run on the
-      # same version at twice the cost. The `engines.node` floor is tested for
-      # real by the `consumer` job below, which does not go through pnpm.
       - name: Setup Node.js environment
         uses: actions/setup-node@v5
         with:
-          node-version-file: .node-version
+          node-version: ${{ matrix.node-version }}
           cache: pnpm
 
+      # `--no-runtime` skips installing the runtime pinned in `devEngines.runtime`,
+      # which pnpm would otherwise substitute for the version above, making both
+      # legs run the same Node. It leaves node_modules deliberately inconsistent
+      # with the lockfile, so the deps-status check has to be disabled too or every
+      # `pnpm run` reinstalls that runtime. Both are needed; neither works alone.
       - name: Lint, test, and build
+        env:
+          pnpm_config_verify_deps_before_run: 'false'
         run: |
-          pnpm install --frozen-lockfile
+          node -v
+          pnpm install --frozen-lockfile --no-runtime
+          pnpm exec node -v
           pnpm run lint
           pnpm run test --coverage
           pnpm run build
 
       - name: Pack the publishable tarball
+        if: matrix.node-version == '24.x'
         run: pnpm pack --pack-destination .
 
       - uses: actions/upload-artifact@v4
+        if: matrix.node-version == '24.x'
         with:
           name: tarball
           path: ./*.tgz
 
+      # only report coverage once, rather than once per matrix entry
       - uses: codecov/codecov-action@v5
+        if: matrix.node-version == '24.x'
         with:
           files: ./coverage/coverage-final.json
           fail_ci_if_error: true
