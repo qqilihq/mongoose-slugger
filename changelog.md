@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Drop `pnpm` from `engines`. It stated a development requirement in the
+  consumer contract; the version is pinned for maintainers by `packageManager`
+  instead. This never blocked an install — npm validates only `node` and `npm`
+  — so consumers are unaffected.
+
 ## [7.0.0] – 2026-09-05
 
 ### Breaking
