@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/qqilihq/mongoose-slugger.git"
+    "url": "git+https://github.com/qqilihq/mongoose-slugger.git"
   },
   "keywords": [
     "mongoose",
