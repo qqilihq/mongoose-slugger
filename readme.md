@@ -100,10 +100,21 @@ Commit all changes and run the following:
 ```shell
 $ pnpm login
 $ pnpm run release <update_type>
+$ git push --follow-tags
 $ pnpm publish
 ```
 
 … where `<update_type>` is one of `patch`, `minor`, or `major`. This will update the `package.json`, and create a tagged Git commit with the version number.
+
+Before bumping, promote the `[Unreleased]` section in `changelog.md` to the version
+being released and repoint the link references at the bottom of that file. The release
+refuses to run otherwise, and the error names the exact lines to write.
+
+`--follow-tags` is not optional: `pnpm version` creates the tag as well as the commit,
+and a plain `git push` sends only the commit. `pnpm publish` refuses to publish from a
+branch that is behind its remote, so it catches an unpushed commit — but it says nothing
+about an unpushed tag, which is the one failure here that leaves no trace in the working
+tree. The changelog's comparison links point at tags, so they break until it is pushed.
 
 Use `pnpm`, not `npm`, for these. Because the project pins its Node version through
 `devEngines.runtime`, npm refuses to run anything here (`EBADDEVENGINES`) unless the
