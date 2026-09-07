@@ -3,5 +3,5 @@
   "editor.formatOnSave": true,
   // use the repository's TypeScript, not the one bundled with the editor, so a
   // contributor does not see errors that CI does not (or miss ones it does)
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }
