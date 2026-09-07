@@ -89,10 +89,17 @@ A caret would permit 6.1, and a routine lockfile refresh would then install a
 compiler that type-aware linting cannot use. Widen it once typescript-eslint
 raises that bound.
 
-`@types/node` deliberately tracks the floor in `engines.node` (`>=22`), not the newest
-release, so the code is type-checked against the APIs the oldest supported consumer
-actually has. `pnpm outdated` will report it several majors behind; that is the correct
+`@types/node` deliberately tracks the major line in `engines.node` (`>=22`), not the
+newest release. `pnpm outdated` will report it several majors behind; that is the correct
 state. Raise it only when `engines.node` itself is raised, which is a breaking change.
+
+Be precise about what that buys: it stops the code being type-checked against APIs from a
+Node major no supported consumer runs. It does **not** pin the types to the floor release
+— `^22` resolves to 22.20.1, whose definitions include everything added across the 22
+line, so `node:sqlite` (Node 22.5.0) type-checks cleanly even though it is absent from the
+22.0.0 that `>=22` promises. Pinning the types that finely is not possible in practice,
+because `@types/node` patch versions do not correspond to Node's. The `consumer` job in CI
+covers that remaining gap instead, by running the published package on 22.0.0 itself.
 
 For the best development experience, make sure that your editor supports [ESLint](https://eslint.org/docs/user-guide/integrations) and [EditorConfig](http://editorconfig.org).
 
