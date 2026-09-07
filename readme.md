@@ -89,6 +89,11 @@ A caret would permit 6.1, and a routine lockfile refresh would then install a
 compiler that type-aware linting cannot use. Widen it once typescript-eslint
 raises that bound.
 
+`@types/node` deliberately tracks the floor in `engines.node` (`>=22`), not the newest
+release, so the code is type-checked against the APIs the oldest supported consumer
+actually has. `pnpm outdated` will report it several majors behind; that is the correct
+state. Raise it only when `engines.node` itself is raised, which is a breaking change.
+
 For the best development experience, make sure that your editor supports [ESLint](https://eslint.org/docs/user-guide/integrations) and [EditorConfig](http://editorconfig.org).
 
 Linting of code and commit message happens on commit via [Husky](https://github.com/typicode/husky).
