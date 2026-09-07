@@ -81,6 +81,14 @@ pnpm downloads and uses the Node version pinned in `devEngines.runtime`, so no s
 version manager is needed. The same version is in `.node-version` for editors and other
 tools that read it.
 
+### Dependency pins
+
+`typescript` is pinned with a tilde (`~6.0.3`) rather than a caret, because
+typescript-eslint declares `typescript: ">=4.8.4 <6.1.0"` as a peer dependency.
+A caret would permit 6.1, and a routine lockfile refresh would then install a
+compiler that type-aware linting cannot use. Widen it once typescript-eslint
+raises that bound.
+
 For the best development experience, make sure that your editor supports [ESLint](https://eslint.org/docs/user-guide/integrations) and [EditorConfig](http://editorconfig.org).
 
 Linting of code and commit message happens on commit via [Husky](https://github.com/typicode/husky).
