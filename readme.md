@@ -92,10 +92,15 @@ Commit all changes and run the following:
 ```shell
 $ pnpm login
 $ pnpm run release <update_type>
+$ git push --follow-tags
 $ pnpm publish
 ```
 
 … where `<update_type>` is one of `patch`, `minor`, or `major`. This will update the `package.json`, and create a tagged Git commit with the version number.
+
+Before bumping, promote the `[Unreleased]` section in `changelog.md` to the version
+being released and repoint the link references at the bottom of that file. The release
+refuses to run otherwise, and the error names the exact lines to write.
 
 Use `pnpm`, not `npm`, for these. Because the project pins its Node version through
 `devEngines.runtime`, npm refuses to run anything here (`EBADDEVENGINES`) unless the
