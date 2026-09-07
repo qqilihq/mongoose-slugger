@@ -5,6 +5,13 @@
   "version": "7.0.0",
   "main": "dist/slugger.js",
   "types": "dist/slugger.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/slugger.d.ts",
+      "default": "./dist/slugger.js"
+    },
+    "./package.json": "./package.json"
+  },
   "license": "MIT",
   "files": [
     "dist"

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- Declare an `exports` map, so only the package entry point and `package.json`
+  are importable. Deep imports such as
+  `mongoose-slugger-plugin/dist/sluggerUtils` now fail with
+  `ERR_PACKAGE_PATH_NOT_EXPORTED`. That module holds internal helpers that were
+  never part of the API; everything intended for consumers — `sluggerPlugin`,
+  `SluggerError`, `SluggerOptions`, `GeneratorFunction` — is exported from the
+  entry point and unaffected. `main` and `types` are kept alongside `exports`,
+  so consumers on `node10` resolution continue to work.
+
 ### Changed
 
 - Drop `pnpm` from `engines`. It stated a development requirement in the
