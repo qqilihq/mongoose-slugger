@@ -52,7 +52,7 @@
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",
     "@eslint/js": "^10.0.1",
-    "@types/node": "^22",
+    "@types/node": "~22.0.0",
     "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^4.1.2",
     "@vitest/eslint-plugin": "^1.6.27",

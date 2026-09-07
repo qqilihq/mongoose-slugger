@@ -89,19 +89,11 @@ A caret would permit 6.1, and a routine lockfile refresh would then install a
 compiler that type-aware linting cannot use. Widen it once typescript-eslint
 raises that bound.
 
-`@types/node` deliberately tracks the major line in `engines.node` (`>=22`), not the
-newest release. `pnpm outdated` will report it several majors behind; that is the correct
-state. Raise it only when `engines.node` itself is raised, which is a breaking change.
-
-Note how little that guarantee is doing here, though: `lib/` imports no Node builtins at
-all, so nothing in the published package depends on Node's API surface. The types serve
-the test, config and `dev/` files, and those run on the pinned `devEngines.runtime`
-whatever this is set to. Treat the pin as cheap insurance for the day something in `lib/`
-does reach for a builtin, rather than as a guarantee that is load-bearing today.
-
-If it ever needs to be exact, `@types/node` minors do track Node's — 22.5.0 is the first
-that types `node:sqlite`, matching the Node release that added it — so `~22.0.0` would pin
-to the `>=22` floor precisely, at the cost of the typing fixes released since.
+`@types/node` is pinned to `~22.0.0`, the floor in `engines.node`, not the newest release.
+Its minors track Node's, so this rejects APIs the floor does not have at compile time —
+`node:sqlite` (Node 22.5.0), for instance. `pnpm outdated` will report it several majors
+behind; that is the correct state. Raise it only together with `engines.node`, which is a
+breaking change.
 
 For the best development experience, make sure that your editor supports [ESLint](https://eslint.org/docs/user-guide/integrations) and [EditorConfig](http://editorconfig.org).
 
