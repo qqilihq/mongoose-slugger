@@ -4,8 +4,8 @@ const config: KnipConfig = {
   // `main` and `types` point into dist/, which only exists after a build.
   // Point Knip at the source instead, so it behaves the same on a fresh clone.
   // The Vitest config and setup files are picked up by Knip's Vitest plugin.
-  entry: ['lib/slugger.ts', 'test/**/*.test.ts'],
-  project: ['lib/**/*.ts', 'test/**/*.ts', '*.ts']
+  entry: ['lib/slugger.ts', 'test/**/*.test.ts', 'dev/**/*.ts'],
+  project: ['lib/**/*.ts', 'test/**/*.ts', 'dev/**/*.ts', '*.ts']
 };
 
 export default config;

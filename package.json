@@ -33,7 +33,8 @@
     "lint:types": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "clean": "node -e \"['./coverage', './dist'].forEach(entry => require('fs').rmSync(entry, { recursive: true, force: true }));\"",
-    "preversion": "pnpm run clean && pnpm run lint && pnpm test && pnpm run build",
+    "preversion": "pnpm run clean && pnpm run lint && pnpm test && pnpm run build && tsx ./dev/verify-changelog.ts",
+    "version": "tsx ./dev/verify-changelog.ts --match-version",
     "release": "pnpm version --message \"chore: release %s\"",
     "prepare": "husky"
   },
@@ -57,6 +58,7 @@
     "mongodb-memory-server-global": "^11.0.1",
     "mongoose": "^9.0.0",
     "prettier": "^3.8.1",
+    "tsx": "^4.23.13",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.0",
     "vitest": "^4.1.2"
