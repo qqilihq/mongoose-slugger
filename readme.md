@@ -81,6 +81,20 @@ pnpm downloads and uses the Node version pinned in `devEngines.runtime`, so no s
 version manager is needed. The same version is in `.node-version` for editors and other
 tools that read it.
 
+### Dependency pins
+
+`typescript` is pinned with a tilde (`~6.0.3`) rather than a caret, because
+typescript-eslint declares `typescript: ">=4.8.4 <6.1.0"` as a peer dependency.
+A caret would permit 6.1, and a routine lockfile refresh would then install a
+compiler that type-aware linting cannot use. Widen it once typescript-eslint
+raises that bound.
+
+`@types/node` is pinned to `~22.0.0`, the floor in `engines.node`, not the newest release.
+Its minors track Node's, so this rejects APIs the floor does not have at compile time —
+`node:sqlite` (Node 22.5.0), for instance. `pnpm outdated` will report it several majors
+behind; that is the correct state. Raise it only together with `engines.node`, which is a
+breaking change.
+
 For the best development experience, make sure that your editor supports [ESLint](https://eslint.org/docs/user-guide/integrations) and [EditorConfig](http://editorconfig.org).
 
 Linting of code and commit message happens on commit via [Husky](https://github.com/typicode/husky).
@@ -92,10 +106,21 @@ Commit all changes and run the following:
 ```shell
 $ pnpm login
 $ pnpm run release <update_type>
+$ git push --follow-tags
 $ pnpm publish
 ```
 
 … where `<update_type>` is one of `patch`, `minor`, or `major`. This will update the `package.json`, and create a tagged Git commit with the version number.
+
+Before bumping, promote the `[Unreleased]` section in `changelog.md` to the version
+being released and repoint the link references at the bottom of that file. The release
+refuses to run otherwise, and the error names the exact lines to write.
+
+`--follow-tags` is not optional: `pnpm version` creates the tag as well as the commit,
+and a plain `git push` sends only the commit. `pnpm publish` refuses to publish from a
+branch that is behind its remote, so it catches an unpushed commit — but it says nothing
+about an unpushed tag, which is the one failure here that leaves no trace in the working
+tree. The changelog's comparison links point at tags, so they break until it is pushed.
 
 Use `pnpm`, not `npm`, for these. Because the project pins its Node version through
 `devEngines.runtime`, npm refuses to run anything here (`EBADDEVENGINES`) unless the

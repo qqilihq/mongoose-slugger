@@ -5,6 +5,13 @@
   "version": "7.0.0",
   "main": "dist/slugger.js",
   "types": "dist/slugger.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/slugger.d.ts",
+      "default": "./dist/slugger.js"
+    },
+    "./package.json": "./package.json"
+  },
   "license": "MIT",
   "files": [
     "dist"
@@ -14,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/qqilihq/mongoose-slugger.git"
+    "url": "git+https://github.com/qqilihq/mongoose-slugger.git"
   },
   "keywords": [
     "mongoose",
@@ -33,7 +40,8 @@
     "lint:types": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "clean": "node -e \"['./coverage', './dist'].forEach(entry => require('fs').rmSync(entry, { recursive: true, force: true }));\"",
-    "preversion": "pnpm run clean && pnpm run lint && pnpm test && pnpm run build",
+    "preversion": "pnpm run clean && pnpm run lint && pnpm test && pnpm run build && tsx ./dev/verify-changelog.ts",
+    "version": "tsx ./dev/verify-changelog.ts --match-version",
     "release": "pnpm version --message \"chore: release %s\"",
     "prepare": "husky"
   },
@@ -44,7 +52,7 @@
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",
     "@eslint/js": "^10.0.1",
-    "@types/node": "^22",
+    "@types/node": "~22.0.0",
     "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^4.1.2",
     "@vitest/eslint-plugin": "^1.6.27",
@@ -57,7 +65,8 @@
     "mongodb-memory-server-global": "^11.0.1",
     "mongoose": "^9.0.0",
     "prettier": "^3.8.1",
-    "typescript": "^6.0.2",
+    "tsx": "^4.23.13",
+    "typescript": "~6.0.3",
     "typescript-eslint": "^8.58.0",
     "vitest": "^4.1.2"
   },
@@ -65,8 +74,7 @@
     "mongoose": "^7.0.0 || ^8.0.0 || ^9.0.0"
   },
   "engines": {
-    "node": ">=22",
-    "pnpm": ">=11"
+    "node": ">=22"
   },
   "devEngines": {
     "runtime": {

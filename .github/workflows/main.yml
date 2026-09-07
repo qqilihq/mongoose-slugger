@@ -12,12 +12,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        # the oldest supported version (`engines.node`) and the current Active LTS
-        node-version: ['22.x', '24.x']
-
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v5
@@ -29,9 +23,16 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v5
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: .node-version
           cache: pnpm
 
+      # Single version on purpose. A matrix here could be made real with
+      # `pnpm install --no-runtime` plus `pnpm_config_verify_deps_before_run=false`,
+      # but it could not reach the version that matters: pnpm 11.25.0 refuses to
+      # start on anything below Node 22.13 ("This version of pnpm requires at least
+      # Node.js v22.13"), while `engines.node` promises 22.0.0. The toolchain simply
+      # cannot run on this package's floor. The `consumer` job tests that floor
+      # instead, using npm and a plain `node`, which have no such requirement.
       - name: Lint, test, and build
         run: |
           pnpm install --frozen-lockfile
@@ -39,11 +40,58 @@ jobs:
           pnpm run test --coverage
           pnpm run build
 
-      # only report coverage once, rather than once per matrix entry
+      - name: Pack the publishable tarball
+        run: pnpm pack --pack-destination .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tarball
+          path: ./*.tgz
+
       - uses: codecov/codecov-action@v5
-        if: matrix.node-version == '24.x'
         with:
           files: ./coverage/coverage-final.json
           fail_ci_if_error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # Installs the packed tarball the way a consumer would and imports it. This is
+  # the only check that exercises what consumers actually get -- the `exports`
+  # map, `main`/`types`, and whether the entry point runs on the oldest runtime
+  # `engines.node` promises. It uses npm and a plain `node`, never pnpm, so the
+  # version below is the version it really runs on.
+  consumer:
+    needs: build
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # `22.0.0` is the exact floor `engines.node: ">=22"` promises, not
+        # `22.x` -- which resolves to the newest 22 release and would let an
+        # API added later in the 22 line pass here while breaking a consumer
+        # on the version we actually claim to support. `24.x` is Active LTS.
+        node-version: ['22.0.0', '24.x']
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: tarball
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install and import as a consumer
+        run: |
+          node -v
+          mkdir consumer && cd consumer
+          printf '{"name":"c","version":"1.0.0","private":true}\n' > package.json
+          npm install ../*.tgz mongoose@9
+          node -e "const m = require('mongoose-slugger-plugin'); console.log(Object.keys(m))"
+          node --input-type=module -e "import { sluggerPlugin } from 'mongoose-slugger-plugin'; console.log(typeof sluggerPlugin)"
+          # the internal module must stay unreachable
+          if node -e "require('mongoose-slugger-plugin/dist/sluggerUtils')" 2>/dev/null; then
+            echo "internal module is importable; the exports map is not doing its job" >&2
+            exit 1
+          fi

@@ -2,5 +2,7 @@
 # exists because pnpm 11 reads its settings from it.
 
 allowBuilds:
+  # installs the platform-specific binary that `tsx` runs on
+  esbuild: true
   # downloads the MongoDB binary used by the tests during install
   mongodb-memory-server-global: true
