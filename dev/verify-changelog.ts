@@ -12,10 +12,14 @@
  * `preversion` runs before the bump, so the common “I forgot to promote it”
  * case fails while the working tree is still clean. `version` runs after the
  * bump, which is the only point at which the new version number is known, so
- * that is where the heading is checked against it.
+ * that is where the heading is checked against it. pnpm, unlike npm, does not
+ * pass the target version to `preversion` as `npm_new_version`. If the versions
+ * do not match, the bump is reverted, so a failed release leaves the tree
+ * clean.
  */
 import path from 'node:path';
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 
 const rootDir = path.join(__dirname, '..');
 const changelogPath = path.join(rootDir, 'changelog.md');
@@ -112,6 +116,11 @@ function verifyChangelog(matchVersion: boolean): void {
 
   if (matchVersion) {
     if (version !== newestVersion) {
+      // pnpm has already written the bumped version by now, and does not undo
+      // it when this script fails, so the next attempt would be refused for a
+      // dirty tree. pnpm also refuses to bump a dirty tree, so the committed
+      // `package.json` is exactly the state before the bump.
+      execFileSync('git', ['checkout', '--', 'package.json'], { cwd: rootDir });
       fail(
         `The changelog is promoted to ${newestVersion}, but the release is ${version}.\n` +
           `Either release ${newestVersion}, or update the changelog to ${version}.`
