@@ -21,6 +21,9 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.9.1(jiti@2.7.0)(supports-color@7.2.0))
+      '@qqilihq/changelog-keeper':
+        specifier: 0.1.0-beta.0
+        version: 0.1.0-beta.0
       '@types/node':
         specifier: ^22
         version: 22.20.1
@@ -495,6 +498,11 @@ packages:
     resolution: {integrity: sha512-UqGPmo56KDfLlfXFAFIrNflHT8tFxWGEivWg3Zeyp4Uy2NlKN1FGPr6/BxcLGG3+kZ6Wp14g5Uj+n71boqZfiw==}
     cpu: [x64]
     os: [win32]
+
+  '@qqilihq/changelog-keeper@0.1.0-beta.0':
+    resolution: {integrity: sha512-2gVVTLzyORJT2zTuF7kvf9i2DMHzJ2rLQDqlRUf0GT/V+7dtyPIGm9By7DamI1wA0+ViU3ax2Tb3QRx4elDHQw==}
+    engines: {node: '>=22.12'}
+    hasBin: true
 
   '@rolldown/binding-android-arm-eabi@1.2.7':
     resolution: {integrity: sha512-EypzgnYCwyVY4NDHKzGmNJT5b+XaQEBniHxsMdeIQLB/tcCzZnhqrzHpZFbX9iaxx+5RiB8caATBtfvZP7zVxQ==}
@@ -2354,6 +2362,8 @@ snapshots:
 
   '@oxc-resolver/binding-win32-x64-msvc@11.24.2':
     optional: true
+
+  '@qqilihq/changelog-keeper@0.1.0-beta.0': {}
 
   '@rolldown/binding-android-arm-eabi@1.2.7':
     optional: true

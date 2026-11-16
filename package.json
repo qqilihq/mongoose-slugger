@@ -33,15 +33,16 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "pnpm run lint:eslint && pnpm run lint:format && pnpm run lint:types && pnpm run lint:knip",
+    "lint": "pnpm run lint:eslint && pnpm run lint:format && pnpm run lint:types && pnpm run lint:knip && pnpm run lint:changelog",
     "lint:eslint": "eslint .",
     "lint:format": "prettier --check .",
     "lint:knip": "knip",
     "lint:types": "tsc --noEmit",
+    "lint:changelog": "changelog-keeper lint",
     "build": "tsc -p tsconfig.build.json",
     "clean": "node -e \"['./coverage', './dist'].forEach(entry => require('fs').rmSync(entry, { recursive: true, force: true }));\"",
-    "preversion": "pnpm run clean && pnpm run lint && pnpm test && pnpm run build && node ./dev/verify-changelog.mts",
-    "version": "node ./dev/verify-changelog.mts --match-version",
+    "preversion": "pnpm run clean && pnpm run lint && pnpm test && pnpm run build",
+    "version": "changelog-keeper verify || (git checkout -- package.json && exit 1)",
     "release": "pnpm version --message \"chore: release %s\"",
     "prepare": "husky"
   },
@@ -52,6 +53,7 @@
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",
     "@eslint/js": "^10.0.1",
+    "@qqilihq/changelog-keeper": "0.1.0-beta.0",
     "@types/node": "^22",
     "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^4.1.2",

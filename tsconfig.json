@@ -62,7 +62,6 @@
     "vitest.config.ts",
     "vitest.setup.ts",
     "vitest.global-setup.ts",
-    "dev",
     "knip.config.ts"
   ]
 }
