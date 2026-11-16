@@ -6,8 +6,8 @@
  *
  * Wired into both release lifecycle scripts:
  *
- *     "preversion": "… && tsx ./dev/verify-changelog.ts"
- *     "version": "tsx ./dev/verify-changelog.ts --match-version"
+ *     "preversion": "… && node ./dev/verify-changelog.mts"
+ *     "version": "node ./dev/verify-changelog.mts --match-version"
  *
  * `preversion` runs before the bump, so the common “I forgot to promote it”
  * case fails while the working tree is still clean. `version` runs after the
@@ -21,7 +21,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
-const rootDir = path.join(__dirname, '..');
+// lifecycle scripts run from the package root
+const rootDir = process.cwd();
 const changelogPath = path.join(rootDir, 'changelog.md');
 const packagePath = path.join(rootDir, 'package.json');
 
