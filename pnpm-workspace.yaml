@@ -8,4 +8,4 @@ allowBuilds:
 # our own package, installed right after publishing it; pnpm otherwise refuses
 # releases younger than its minimum release age
 minimumReleaseAgeExclude:
-  - '@qqilihq/changelog-keeper@0.1.0-beta.0'
+  - '@qqilihq/changelog-keeper@0.1.0-beta.1'

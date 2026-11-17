@@ -22,8 +22,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.9.1(jiti@2.7.0)(supports-color@7.2.0))
       '@qqilihq/changelog-keeper':
-        specifier: 0.1.0-beta.0
-        version: 0.1.0-beta.0
+        specifier: 0.1.0-beta.1
+        version: 0.1.0-beta.1
       '@types/node':
         specifier: ^22
         version: 22.20.1
@@ -499,8 +499,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@qqilihq/changelog-keeper@0.1.0-beta.0':
-    resolution: {integrity: sha512-2gVVTLzyORJT2zTuF7kvf9i2DMHzJ2rLQDqlRUf0GT/V+7dtyPIGm9By7DamI1wA0+ViU3ax2Tb3QRx4elDHQw==}
+  '@qqilihq/changelog-keeper@0.1.0-beta.1':
+    resolution: {integrity: sha512-B4492v+r2ko6q/R7ykBJbiQtERrei6fKfWfkNWE4f1U+KHl03u8GU3sFBa/hW7QWxyD4gIEd5wmpisKeWZdttw==}
     engines: {node: '>=22.12'}
     hasBin: true
 
@@ -1389,6 +1389,11 @@ packages:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
     engines: {node: '>=10'}
 
+  marked@18.2.0:
+    resolution: {integrity: sha512-KaeL+tAbtvI930q7HE2PN5lYXYdT8EiSmxHlN6F3rsfb57wd5mp5W5TLazpdj4inTQBJdgjYwbs40W/0VUGU+Q==}
+    engines: {node: '>= 20'}
+    hasBin: true
+
   memory-pager@1.5.0:
     resolution: {integrity: sha512-ZS4Bp4r/Zoeq6+NLJpP+0Zzm0pR8whtGPf1XExKLJBAczGMnSi3It14OiNCStjQjM6NU1okjQGSxgEZN8eBYKg==}
 
@@ -1749,6 +1754,11 @@ packages:
 
   semver@7.8.5:
     resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+  semver@7.8.6:
+    resolution: {integrity: sha512-9lpSSU4Mly3mrtruwLs1eLK6+gzbzqeBFwRNjIjE+9LuDpWdYctrQlQ3ej1Ilgi7gknpsTRnPoLP8DpCHqHIJw==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -2363,7 +2373,10 @@ snapshots:
   '@oxc-resolver/binding-win32-x64-msvc@11.24.2':
     optional: true
 
-  '@qqilihq/changelog-keeper@0.1.0-beta.0': {}
+  '@qqilihq/changelog-keeper@0.1.0-beta.1':
+    dependencies:
+      marked: 18.2.0
+      semver: 7.8.6
 
   '@rolldown/binding-android-arm-eabi@1.2.7':
     optional: true
@@ -3176,6 +3189,8 @@ snapshots:
     dependencies:
       semver: 7.8.5
 
+  marked@18.2.0: {}
+
   memory-pager@1.5.0: {}
 
   meow@13.2.0: {}
@@ -3435,6 +3450,8 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.8.5: {}
+
+  semver@7.8.6: {}
 
   shebang-command@2.0.0:
     dependencies:
