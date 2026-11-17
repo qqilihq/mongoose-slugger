@@ -5,6 +5,13 @@
   "version": "7.0.0",
   "main": "dist/slugger.js",
   "types": "dist/slugger.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/slugger.d.ts",
+      "default": "./dist/slugger.js"
+    },
+    "./package.json": "./package.json"
+  },
   "license": "MIT",
   "files": [
     "dist"
@@ -14,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/qqilihq/mongoose-slugger.git"
+    "url": "git+https://github.com/qqilihq/mongoose-slugger.git"
   },
   "keywords": [
     "mongoose",
@@ -26,14 +33,16 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "pnpm run lint:eslint && pnpm run lint:format && pnpm run lint:types && pnpm run lint:knip",
+    "lint": "pnpm run lint:eslint && pnpm run lint:format && pnpm run lint:types && pnpm run lint:knip && pnpm run lint:changelog",
     "lint:eslint": "eslint .",
     "lint:format": "prettier --check .",
     "lint:knip": "knip",
     "lint:types": "tsc --noEmit",
+    "lint:changelog": "changelog-keeper lint",
     "build": "tsc -p tsconfig.build.json",
     "clean": "node -e \"['./coverage', './dist'].forEach(entry => require('fs').rmSync(entry, { recursive: true, force: true }));\"",
     "preversion": "pnpm run clean && pnpm run lint && pnpm test && pnpm run build",
+    "version": "changelog-keeper verify || (git checkout -- package.json && exit 1)",
     "release": "pnpm version --message \"chore: release %s\"",
     "prepare": "husky"
   },
@@ -44,6 +53,7 @@
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",
     "@eslint/js": "^10.0.1",
+    "@qqilihq/changelog-keeper": "0.1.0-beta.1",
     "@types/node": "^22",
     "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^4.1.2",
@@ -65,8 +75,7 @@
     "mongoose": "^7.0.0 || ^8.0.0 || ^9.0.0"
   },
   "engines": {
-    "node": ">=22",
-    "pnpm": ">=11"
+    "node": ">=22"
   },
   "devEngines": {
     "runtime": {

@@ -92,10 +92,14 @@ Commit all changes and run the following:
 ```shell
 $ pnpm login
 $ pnpm run release <update_type>
+$ git push --follow-tags
 $ pnpm publish
 ```
 
 … where `<update_type>` is one of `patch`, `minor`, or `major`. This will update the `package.json`, and create a tagged Git commit with the version number.
+
+Before bumping, move the entries under `[Unreleased]` in `changelog.md` to a new section
+for the version being released, and add its link reference at the bottom of that file.
 
 Use `pnpm`, not `npm`, for these. Because the project pins its Node version through
 `devEngines.runtime`, npm refuses to run anything here (`EBADDEVENGINES`) unless the
