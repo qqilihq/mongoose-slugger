@@ -19,14 +19,16 @@ export default defineConfig(
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        // `eslint.config.mjs` belongs to no tsconfig; the default project lets the
+        // type-aware rules see it anyway
+        projectService: { allowDefaultProject: ['eslint.config.mjs'] },
         tsconfigRootDir: import.meta.dirname
       }
     },
     rules: {
-      // warn when using APIs marked @deprecated in their JSDoc -- this package
+      // report APIs marked @deprecated in their JSDoc -- this package
       // supports three Mongoose majors, so deprecations are worth surfacing
-      '@typescript-eslint/no-deprecated': 'warn',
+      '@typescript-eslint/no-deprecated': 'error',
 
       // These remain off: the plugin reaches into Mongoose internals (symbol-keyed
       // properties on documents, `schema.plugins`, the schema's event emitter), which
@@ -52,9 +54,7 @@ export default defineConfig(
     rules: eslintPluginVitest.configs.recommended.rules
   },
   {
-    // this file is not part of any tsconfig, so type-aware rules cannot apply
     files: ['**/*.mjs'],
-    extends: [tseslint.configs.disableTypeChecked],
     rules: {
       // `engines.node` is the floor for consumers of the published package.
       // Config files are neither published nor run by them -- they run on the
