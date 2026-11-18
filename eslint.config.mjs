@@ -26,9 +26,9 @@ export default defineConfig(
       }
     },
     rules: {
-      // warn when using APIs marked @deprecated in their JSDoc -- this package
+      // report APIs marked @deprecated in their JSDoc -- this package
       // supports three Mongoose majors, so deprecations are worth surfacing
-      '@typescript-eslint/no-deprecated': 'warn',
+      '@typescript-eslint/no-deprecated': 'error',
 
       // These remain off: the plugin reaches into Mongoose internals (symbol-keyed
       // properties on documents, `schema.plugins`, the schema's event emitter), which
